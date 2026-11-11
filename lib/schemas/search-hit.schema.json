@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/moca/schemas/v1/search-hit.schema.json",
+  "title": "MOCA search hit",
+  "description": "What a search backend returns for one candidate match, before the search entry point resolves it into a citation record. Normative: spec/moca-reader-contract.md section 9.1.",
+  "type": "object",
+  "required": [
+    "digest",
+    "node",
+    "path",
+    "score"
+  ],
+  "properties": {
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}(?![\\s\\S])",
+      "description": "The digest of the package the hit was indexed from."
+    },
+    "node": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The node id."
+    },
+    "path": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The node path relative to content/."
+    },
+    "locale": {
+      "type": "string",
+      "minLength": 1
+    },
+    "span": {
+      "type": "object",
+      "required": [
+        "start",
+        "end"
+      ],
+      "properties": {
+        "start": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false,
+      "description": "UTF-8 byte offsets into the node file."
+    },
+    "score": {
+      "type": "number",
+      "description": "Higher is a better match. Not comparable across backends."
+    },
+    "record": {
+      "type": "object",
+      "description": "A citation record written at ingest by a store backend. The Reader re-applies the clock and the policy to it, and checks its package digest against the loaded packages."
+    }
+  },
+  "additionalProperties": false
+}

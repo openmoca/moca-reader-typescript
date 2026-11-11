@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Build / tooling output
+coverage/
+*.tsbuildinfo
+moca-lint.sarif
+
+# Generated MOCA artifacts (packages and sidecars are built, never committed;
+# the checked-in fixtures under examples/ are uncompressed directories)
+*.moca
+*.moca.idx.zip
+
+# Source PDFs for examples/pdf are downloaded by scripts/fetch-pdfs.mjs
+examples/pdf/capture/*.pdf
+
+# Agent / editor local state
+.claude/
+.vscode/
+.idea/
+*.swp
+
+# OS cruft
+.DS_Store
+Thumbs.db

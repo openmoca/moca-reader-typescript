@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/moca/schemas/v1/structure.schema.json",
+  "title": "MOCA structure view",
+  "description": "The sorted JSON view of structure.ttl that moca-lint structure prints and Readers expose (structureView). It is not a package file: Readers read structure from structure.ttl only (docs/adr/0019-park-structure-json.md). See spec/moca-package-spec.md section 5.6.",
+  "type": "object",
+  "required": [
+    "structureVersion",
+    "concepts",
+    "sequences"
+  ],
+  "properties": {
+    "structureVersion": {
+      "const": 1
+    },
+    "concepts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "iri",
+          "broader",
+          "related",
+          "parts",
+          "requires",
+          "replaces"
+        ],
+        "properties": {
+          "iri": {
+            "$ref": "#/$defs/iri"
+          },
+          "label": {
+            "type": "string"
+          },
+          "definition": {
+            "type": "string"
+          },
+          "deprecated": {
+            "const": true
+          },
+          "broader": {
+            "$ref": "#/$defs/iris"
+          },
+          "related": {
+            "$ref": "#/$defs/iris"
+          },
+          "parts": {
+            "$ref": "#/$defs/iris"
+          },
+          "requires": {
+            "$ref": "#/$defs/iris"
+          },
+          "replaces": {
+            "$ref": "#/$defs/iris"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "sequences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "iri",
+          "members"
+        ],
+        "properties": {
+          "iri": {
+            "$ref": "#/$defs/iri"
+          },
+          "members": {
+            "$ref": "#/$defs/iris"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "iri": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\t\\n\\v\\f\\r \u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]+(?![\\s\\S])"
+    },
+    "iris": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/iri"
+      }
+    }
+  }
+}

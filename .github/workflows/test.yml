@@ -1,0 +1,115 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**/*.md']
+  pull_request:
+    paths-ignore: ['**/*.md']
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+# The other MOCA repositories, at fixed refs: release tags, or commits while a Spec Change
+# Proposal is in flight; never a branch (moca-spec CONTRIBUTING.md).
+env:
+  MOCA_SPEC_REF: v0.6.0
+  MOCA_TOOLS_REF: v0.6.0
+
+jobs:
+  deps:
+    name: Public dependencies only
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: moca-reader-typescript
+      # The check lives in moca-spec, the one copy every open repository runs.
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/moca-spec
+          ref: ${{ env.MOCA_SPEC_REF }}
+          path: moca-spec
+          # Read access to the other MOCA repos while they are private.
+          token: ${{ secrets.MOCA_REPOS_TOKEN || github.token }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node moca-spec/scripts/check-deps.mjs moca-reader-typescript
+
+  test:
+    name: Test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: moca-reader-typescript
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/moca-spec
+          ref: ${{ env.MOCA_SPEC_REF }}
+          path: moca-spec
+          # Read access to the other MOCA repos while they are private.
+          token: ${{ secrets.MOCA_REPOS_TOKEN || github.token }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: '*/package-lock.json'
+      - run: npm ci
+        working-directory: moca-reader-typescript
+      - run: npm test
+        working-directory: moca-reader-typescript
+
+  # Phase 1's gate: the getting-started guide works as written (docs/getting-started.md).
+  guide:
+    name: Getting-started guide
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: moca-reader-typescript
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/moca-spec
+          ref: ${{ env.MOCA_SPEC_REF }}
+          path: moca-spec
+          token: ${{ secrets.MOCA_REPOS_TOKEN || github.token }}
+      # moca-spec's corpus runner links moca-tools until the tools are on npm.
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/moca-tools
+          ref: ${{ env.MOCA_TOOLS_REF }}
+          path: moca-tools
+          token: ${{ secrets.MOCA_REPOS_TOKEN || github.token }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+        working-directory: moca-reader-typescript
+      - run: npm ci
+        working-directory: moca-tools
+      - name: Example package from the moca-spec release
+        env:
+          GH_TOKEN: ${{ secrets.MOCA_REPOS_TOKEN || github.token }}
+        run: gh release download v0.6.0 -R ${{ github.repository_owner }}/moca-spec -p support-kb.moca -p example-trust-root.json -D "$RUNNER_TEMP/assets"
+      - run: npm pack --pack-destination "$RUNNER_TEMP/assets"
+        working-directory: moca-reader-typescript
+      # Until @openmoca/moca-core is on npm and the repositories are public: install the Reader packed
+      # from this commit, read the example from the private release, and use the moca-spec checkout.
+      # Drop each replacement when what it stands in for is public.
+      - run: >-
+          node ../moca-spec/scripts/run-guide.mjs docs/getting-started.md
+          --replace "npm install @openmoca/moca-core=>npm install $RUNNER_TEMP/assets/openmoca-moca-core-*.tgz"
+          --replace "https://github.com/openmoca/moca-spec/releases/download/v0.6.0/=>file://$RUNNER_TEMP/assets/"
+          --replace "git clone --depth 1 --branch v0.6.0 https://github.com/openmoca/moca-spec.git=>ln -s $GITHUB_WORKSPACE/moca-spec moca-spec"
+        working-directory: moca-reader-typescript

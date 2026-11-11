@@ -1,0 +1,45 @@
+{
+  "name": "@openmoca/moca-core",
+  "version": "0.6.0",
+  "description": "Reference MOCA Reader: open, check, digest, verify and cite MOCA packages.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "npm run check:schemas && node --test test/*.test.js",
+    "check:schemas": "node scripts/check-vendored-schemas.mjs"
+  },
+  "dependencies": {
+    "@sigstore/bundle": "^5.0.0",
+    "@sigstore/protobuf-specs": "^0.5.2",
+    "@sigstore/verify": "^4.1.2",
+    "adm-zip": "^0.6.0",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "js-yaml": "^5.2.2",
+    "n3": "^2.7.12",
+    "sigstore": "^5.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/openmoca/moca-reader-typescript.git"
+  },
+  "files": [
+    "lib/",
+    "README.md"
+  ],
+  "exports": {
+    ".": "./lib/index.js",
+    "./lib/*": "./lib/*",
+    "./package.json": "./package.json"
+  },
+  "homepage": "https://github.com/openmoca/moca-reader-typescript#readme",
+  "bugs": {
+    "url": "https://github.com/openmoca/moca-reader-typescript/issues"
+  }
+}

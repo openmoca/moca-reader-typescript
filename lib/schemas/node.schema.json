@@ -1,0 +1,372 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/moca/schemas/v1/node.schema.json",
+  "title": "MOCA content node frontmatter",
+  "description": "OKF v0.2 concept-document frontmatter plus MOCA's `moca` extension mapping. See spec/moca-package-spec.md section 5.",
+  "type": "object",
+  "required": [
+    "type"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "[^\\t\\n\\v\\f\\r    -     　﻿]",
+      "description": "Required by OKF: not empty and not only white space."
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "resource": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "generated": {
+      "type": "object",
+      "required": [
+        "by"
+      ],
+      "properties": {
+        "by": {
+          "type": "string",
+          "minLength": 1
+        },
+        "at": {
+          "type": "string",
+          "anyOf": [
+            {
+              "format": "date-time"
+            },
+            {
+              "format": "date"
+            }
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "verified": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "by",
+            "at"
+          ],
+          "properties": {
+            "by": {
+              "type": "string",
+              "minLength": 1
+            },
+            "at": {
+              "type": "string",
+              "anyOf": [
+                {
+                  "format": "date-time"
+                },
+                {
+                  "format": "date"
+                }
+              ]
+            }
+          },
+          "additionalProperties": true
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "by",
+              "at"
+            ],
+            "properties": {
+              "by": {
+                "type": "string",
+                "minLength": 1
+              },
+              "at": {
+                "type": "string",
+                "anyOf": [
+                  {
+                    "format": "date-time"
+                  },
+                  {
+                    "format": "date"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": true
+          }
+        }
+      ]
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/source"
+      }
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "stable",
+        "deprecated"
+      ]
+    },
+    "stale_after": {
+      "type": "string",
+      "anyOf": [
+        {
+          "format": "date-time"
+        },
+        {
+          "format": "date"
+        }
+      ]
+    },
+    "moca": {
+      "$ref": "#/$defs/moca"
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "source": {
+      "type": "object",
+      "required": [
+        "resource"
+      ],
+      "properties": {
+        "resource": {
+          "type": "string",
+          "minLength": 1
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        },
+        "usage_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "last_modified": {
+          "type": "string",
+          "anyOf": [
+            {
+              "format": "date-time"
+            },
+            {
+              "format": "date"
+            }
+          ]
+        },
+        "usage_window": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "string",
+              "anyOf": [
+                {
+                  "format": "date-time"
+                },
+                {
+                  "format": "date"
+                }
+              ]
+            },
+            "to": {
+              "type": "string",
+              "anyOf": [
+                {
+                  "format": "date-time"
+                },
+                {
+                  "format": "date"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "moca": {
+      "type": "object",
+      "properties": {
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          }
+        },
+        "valid_from": {
+          "type": "string",
+          "anyOf": [
+            {
+              "format": "date-time"
+            },
+            {
+              "format": "date"
+            }
+          ]
+        },
+        "valid_until": {
+          "type": "string",
+          "anyOf": [
+            {
+              "format": "date-time"
+            },
+            {
+              "format": "date"
+            }
+          ]
+        },
+        "contested_by": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "audience": {
+          "type": "string",
+          "minLength": 1
+        },
+        "profiles": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        },
+        "concepts": {
+          "type": "array",
+          "description": "Concepts from the package's structure.ttl this node is bound to (spec/moca-package-spec.md §5.6).",
+          "items": {
+            "type": "object",
+            "required": [
+              "iri"
+            ],
+            "properties": {
+              "iri": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\t\\n\\v\\f\\r    -     　﻿]+(?![\\s\\S])"
+              },
+              "role": {
+                "enum": [
+                  "primary",
+                  "supporting"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "evidence": {
+      "type": "object",
+      "required": [
+        "source",
+        "selector"
+      ],
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "selector": {
+          "$ref": "#/$defs/selector"
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "selector": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "value"
+          ],
+          "properties": {
+            "type": {
+              "const": "FragmentSelector"
+            },
+            "value": {
+              "type": "string",
+              "minLength": 1
+            },
+            "conformsTo": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "exact"
+          ],
+          "properties": {
+            "type": {
+              "const": "TextQuoteSelector"
+            },
+            "exact": {
+              "type": "string",
+              "minLength": 1
+            },
+            "prefix": {
+              "type": "string"
+            },
+            "suffix": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "start",
+            "end"
+          ],
+          "properties": {
+            "type": {
+              "const": "TextPositionSelector"
+            },
+            "start": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "end": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

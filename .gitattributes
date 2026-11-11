@@ -1,0 +1,4 @@
+# Package digests and signatures cover exact bytes, so every checkout must
+# have the same line endings on every platform.
+* text=auto eol=lf
+*.zip binary

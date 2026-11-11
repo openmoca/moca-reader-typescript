@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/moca/schemas/v1/trust-root.schema.json",
+  "title": "MOCA trust root",
+  "description": "Host-supplied: which keys and Sigstore identities a host trusts, and for what. See spec/moca-attestations.md section 6.",
+  "type": "object",
+  "properties": {
+    "keys": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "keyid",
+          "publicKey",
+          "roles"
+        ],
+        "properties": {
+          "keyid": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Unique within the trust root."
+          },
+          "publicKey": {
+            "type": "string",
+            "minLength": 1
+          },
+          "identity": {
+            "type": "string"
+          },
+          "expires": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "package",
+                "review"
+              ]
+            },
+            "uniqueItems": true,
+            "description": "What the key may attest. Required; an empty list trusts the key for nothing."
+          },
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true,
+            "description": "Package ids this entry may speak for in supersedes and conflictsWith relations: exact ids, or prefixes ending in /, : or # (package spec §7.2)."
+          },
+          "reviewers": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true,
+            "description": "The reviewers (OKF actors) this entry may sign reviews as. Without it, any (attestations §4)."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "sigstore": {
+      "type": "object",
+      "properties": {
+        "trustedRoot": {
+          "type": "object",
+          "description": "A Sigstore trusted root (trusted_root.json from sigstore/protobuf-specs): the Fulcio, Rekor, CT log and timestamp keys to verify against, offline. Attestations section 6."
+        },
+        "identities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "issuer",
+              "subject",
+              "roles"
+            ],
+            "properties": {
+              "issuer": {
+                "type": "string",
+                "description": "Matched exactly against the certificate's OIDC issuer."
+              },
+              "subject": {
+                "type": "string",
+                "description": "Matched exactly against the certificate's subject alternative name (email or URI)."
+              },
+              "roles": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "package",
+                    "review"
+                  ]
+                },
+                "uniqueItems": true,
+                "description": "What the identity may attest. Required; an empty list trusts it for nothing."
+              },
+              "ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "uniqueItems": true,
+                "description": "Package ids this entry may speak for in supersedes and conflictsWith relations: exact ids, or prefixes ending in /, : or # (package spec §7.2)."
+              },
+              "reviewers": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "uniqueItems": true,
+                "description": "The reviewers (OKF actors) this entry may sign reviews as. Without it, any (attestations §4)."
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

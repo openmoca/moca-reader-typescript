@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/moca/schemas/v1/sidecar-index.schema.json",
+  "title": "MOCA sidecar index manifest (index.json)",
+  "description": "See spec/moca-sidecar-index-spec.md.",
+  "type": "object",
+  "required": [
+    "indexVersion",
+    "target",
+    "indexType",
+    "storage"
+  ],
+  "properties": {
+    "indexVersion": {
+      "const": 1
+    },
+    "target": {
+      "type": "object",
+      "required": [
+        "id",
+        "version",
+        "digest"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\t\\n\\v\\f\\r \u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]+(?![\\s\\S])"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?(?![\\s\\S])"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}(?![\\s\\S])"
+        }
+      },
+      "additionalProperties": false
+    },
+    "indexType": {
+      "type": "string",
+      "minLength": 1,
+      "description": "lexical | dense | hybrid. Describes the sidecar; a Reader uses what it holds."
+    },
+    "model": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string"
+        },
+        "dimensions": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "distance": {
+          "enum": [
+            "cosine",
+            "dot",
+            "euclidean"
+          ]
+        },
+        "queryPrefix": {
+          "type": "string"
+        },
+        "documentPrefix": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "chunking": {
+      "type": "object",
+      "properties": {
+        "strategy": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "storage": {
+      "type": "object",
+      "required": [
+        "format",
+        "file"
+      ],
+      "properties": {
+        "format": {
+          "type": "string",
+          "minLength": 1
+        },
+        "file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "vectors": {
+          "type": "object",
+          "description": "Vectors in a binary file: little-endian float32, row-major, one row per payload item in items order.",
+          "required": [
+            "file",
+            "dtype",
+            "dimensions"
+          ],
+          "properties": {
+            "file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "dtype": {
+              "const": "float32"
+            },
+            "dimensions": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "createdBy": {
+      "type": "string"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "indexType": {
+            "enum": [
+              "dense",
+              "hybrid"
+            ]
+          }
+        },
+        "required": [
+          "indexType"
+        ]
+      },
+      "then": {
+        "required": [
+          "model"
+        ]
+      }
+    }
+  ],
+  "additionalProperties": false
+}

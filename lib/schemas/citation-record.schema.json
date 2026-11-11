@@ -1,0 +1,326 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/moca/schemas/v1/citation-record.schema.json",
+  "title": "MOCA citation record",
+  "description": "What a Reader or adapter hands to an application for one node or chunk. Normative: spec/moca-reader-contract.md section 7.",
+  "type": "object",
+  "required": [
+    "package",
+    "node",
+    "trust"
+  ],
+  "properties": {
+    "package": {
+      "type": "object",
+      "required": [
+        "id",
+        "version",
+        "digest",
+        "signed"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}(?![\\s\\S])"
+        },
+        "signed": {
+          "type": "boolean"
+        },
+        "signers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "node": {
+      "type": "object",
+      "required": [
+        "id",
+        "path",
+        "type",
+        "ref"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "locale": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}(?![\\s\\S])"
+        },
+        "ref": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Versioned node reference: <package id>@<version>#<path>. Unique across package versions; use it as the citation key."
+        }
+      },
+      "additionalProperties": false
+    },
+    "span": {
+      "type": "object",
+      "required": [
+        "start",
+        "end"
+      ],
+      "properties": {
+        "start": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false,
+      "description": "UTF-8 byte offsets into the node file."
+    },
+    "text": {
+      "type": "string"
+    },
+    "trust": {
+      "type": "object",
+      "required": [
+        "status",
+        "declaredVerified",
+        "attestedReviews",
+        "reviewStatus",
+        "stale",
+        "inForce",
+        "superseded",
+        "contested"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "draft",
+            "stable",
+            "deprecated"
+          ]
+        },
+        "generated": {
+          "oneOf": [
+            {
+              "type": "object",
+              "required": [
+                "by"
+              ],
+              "properties": {
+                "by": {
+                  "type": "string"
+                },
+                "at": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "declaredVerified": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "by"
+            ],
+            "properties": {
+              "by": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string"
+              }
+            }
+          },
+          "description": "OKF verified entries: self-declared, not cryptographically checked."
+        },
+        "attestedReviews": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "reviewer",
+              "reviewedAt",
+              "outcome",
+              "signer",
+              "packageVerified"
+            ],
+            "properties": {
+              "reviewer": {
+                "type": "string"
+              },
+              "reviewedAt": {
+                "type": "string"
+              },
+              "outcome": {
+                "enum": [
+                  "accurate",
+                  "needs-change",
+                  "inaccurate"
+                ]
+              },
+              "scope": {
+                "type": "string"
+              },
+              "signer": {
+                "type": "string"
+              },
+              "packageVerified": {
+                "type": "boolean",
+                "description": "Whether the package carrying the review has a valid package attestation. A review in an unsigned package never counts as approved (ADR-0017)."
+              }
+            }
+          }
+        },
+        "reviewStatus": {
+          "enum": [
+            "approved",
+            "disputed",
+            "unverified",
+            "none"
+          ],
+          "description": "approved: signed, a current review is accurate and none says otherwise; disputed: signed, and a current review says needs-change or inaccurate; unverified: reviews in an unsigned package; none: no current review (Reader contract §7)."
+        },
+        "staleAfter": {
+          "type": "string"
+        },
+        "validFrom": {
+          "type": "string"
+        },
+        "validUntil": {
+          "type": "string"
+        },
+        "stale": {
+          "type": "boolean"
+        },
+        "inForce": {
+          "type": "boolean"
+        },
+        "superseded": {
+          "type": "boolean"
+        },
+        "supersededBy": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "contested": {
+          "type": "boolean"
+        },
+        "contestedBy": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "source"
+        ],
+        "properties": {
+          "source": {
+            "type": "object"
+          },
+          "selector": {
+            "type": "object"
+          },
+          "note": {
+            "type": "string"
+          },
+          "matched": {
+            "type": "boolean",
+            "description": "true when the Reader checked the selector against the cited file inside the package and it matched; false when it did not match; absent when not checked. It says the quote is in the file, not that the claim is true."
+          }
+        }
+      }
+    },
+    "concepts": {
+      "type": "array",
+      "description": "Absolute concept IRIs the node is bound to, from the package structure (moca.concepts).",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\t\\n\\v\\f\\r \u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]+(?![\\s\\S])"
+      }
+    },
+    "audience": {
+      "type": "string"
+    },
+    "audienceInvalid": {
+      "const": true,
+      "description": "Present when the node's moca.audience is malformed: the record never matches an audience set (Reader contract §8)."
+    },
+    "profiles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "score": {
+      "type": "number"
+    },
+    "retrieval": {
+      "type": "object",
+      "description": "How a search found this record (ADR-0010): through the backend, or added by a retrieval hook following the structure.",
+      "required": [
+        "via"
+      ],
+      "properties": {
+        "via": {
+          "enum": [
+            "search",
+            "requires",
+            "parts",
+            "narrower",
+            "related"
+          ]
+        },
+        "from": {
+          "type": "string",
+          "description": "The concept IRI the record was reached from."
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

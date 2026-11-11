@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/moca/schemas/v1/review-predicate.schema.json",
+  "title": "MOCA review attestation predicate",
+  "description": "Predicate for predicateType https://w3id.org/moca/attestation/review/v1. See spec/moca-attestations.md section 4.",
+  "type": "object",
+  "required": [
+    "package",
+    "reviewer",
+    "reviewedAt",
+    "outcome"
+  ],
+  "properties": {
+    "package": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\t\\n\\v\\f\\r \u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]+(?![\\s\\S])"
+    },
+    "reviewer": {
+      "type": "string",
+      "minLength": 1,
+      "description": "OKF actor, e.g. human:jane.doe"
+    },
+    "reviewedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "outcome": {
+      "enum": [
+        "accurate",
+        "needs-change",
+        "inaccurate"
+      ]
+    },
+    "scope": {
+      "type": "string"
+    },
+    "note": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

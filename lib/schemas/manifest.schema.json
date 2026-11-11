@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/moca/schemas/v1/manifest.schema.json",
+  "title": "MOCA package manifest (moca.json)",
+  "description": "Normative schema for moca.json. See spec/moca-package-spec.md section 4.",
+  "type": "object",
+  "required": [
+    "id",
+    "version",
+    "title"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "mocaVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+(?![\\s\\S])",
+      "description": "The MOCA specification version the package was written against, major.minor."
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\t\\n\\v\\f\\r    -     　﻿]+(?![\\s\\S])",
+      "description": "Absolute URI naming the package across all its versions. https: or tag: URIs are recommended. It never contains #: a node identifier is the id, #, and the node path.",
+      "not": {
+        "pattern": "#"
+      }
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?(?![\\s\\S])",
+      "description": "Content version, following the content-versioning rules in spec section 4.3."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*(?![\\s\\S])",
+      "description": "BCP 47 tag of the default-language content."
+    },
+    "locales": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*(?![\\s\\S])"
+      },
+      "uniqueItems": true,
+      "description": "BCP 47 tags of additional locale variants, see spec section 5.4."
+    },
+    "license": {
+      "type": "string",
+      "description": "SPDX license expression."
+    },
+    "publisher": {
+      "type": "string"
+    },
+    "validFrom": {
+      "type": "string",
+      "anyOf": [
+        {
+          "format": "date-time"
+        },
+        {
+          "format": "date"
+        }
+      ],
+      "description": "When the package's content comes into force."
+    },
+    "validUntil": {
+      "type": "string",
+      "anyOf": [
+        {
+          "format": "date-time"
+        },
+        {
+          "format": "date"
+        }
+      ],
+      "description": "When the package's content stops being in force."
+    },
+    "members": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/member"
+      },
+      "description": "Ordered packages this package is composed of, each pinned by digest."
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/relation"
+      }
+    },
+    "profiles": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\t\\n\\v\\f\\r    -     　﻿]+(?![\\s\\S])"
+      },
+      "additionalProperties": {
+        "type": "object"
+      },
+      "description": "Profile URI -> that profile's package-level data."
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "member": {
+      "type": "object",
+      "required": [
+        "id",
+        "version",
+        "digest"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\t\\n\\v\\f\\r    -     　﻿]+(?![\\s\\S])",
+          "not": {
+            "pattern": "#"
+          },
+          "description": "A package id; never contains #."
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?(?![\\s\\S])"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}(?![\\s\\S])"
+        }
+      },
+      "additionalProperties": false
+    },
+    "relation": {
+      "type": "object",
+      "required": [
+        "type",
+        "target"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "description": "supersedes | amends | conflictsWith | crossReferences, or a profile-defined type."
+        },
+        "target": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\t\\n\\v\\f\\r    -     　﻿]+(?![\\s\\S])",
+          "not": {
+            "pattern": "#"
+          },
+          "description": "A package id; never contains #."
+        },
+        "version": {
+          "type": "string",
+          "description": "Optional exact version of the target the relation applies to.",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?(?![\\s\\S])"
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

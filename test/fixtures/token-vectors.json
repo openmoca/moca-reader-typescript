@@ -1,0 +1,145 @@
+[
+  {
+    "why": "words are lower-cased; punctuation separates",
+    "text": "Hello, World!",
+    "tokens": [
+      "hello",
+      "world"
+    ]
+  },
+  {
+    "why": "NFKC composes accents",
+    "text": "naïve café",
+    "tokens": [
+      "naïve",
+      "café"
+    ]
+  },
+  {
+    "why": "vowel signs stay inside Devanagari words",
+    "text": "नमस्ते दुनिया",
+    "tokens": [
+      "नमस्ते",
+      "दुनिया"
+    ]
+  },
+  {
+    "why": "Arabic words stay whole",
+    "text": "مرحبا بالعالم",
+    "tokens": [
+      "مرحبا",
+      "بالعالم"
+    ]
+  },
+  {
+    "why": "Korean is spaced: whole words",
+    "text": "안녕하세요 세계",
+    "tokens": [
+      "안녕하세요",
+      "세계"
+    ]
+  },
+  {
+    "why": "Chinese: each character and each pair",
+    "text": "机器学习",
+    "tokens": [
+      "机",
+      "机器",
+      "器",
+      "器学",
+      "学",
+      "学习",
+      "习"
+    ]
+  },
+  {
+    "why": "Japanese kanji and katakana run together",
+    "text": "東京タワー",
+    "tokens": [
+      "東",
+      "東京",
+      "京",
+      "京タ",
+      "タ",
+      "タワ",
+      "ワ",
+      "ワー",
+      "ー"
+    ]
+  },
+  {
+    "why": "Thai: each character with its marks, and each pair",
+    "text": "สวัสดีครับ",
+    "tokens": [
+      "ส",
+      "สวั",
+      "วั",
+      "วัส",
+      "ส",
+      "สดี",
+      "ดี",
+      "ดีค",
+      "ค",
+      "ครั",
+      "รั",
+      "รับ",
+      "บ"
+    ]
+  },
+  {
+    "why": "spaced and unspaced scripts split apart",
+    "text": "GPT-4 模型",
+    "tokens": [
+      "gpt",
+      "4",
+      "模",
+      "模型",
+      "型"
+    ]
+  },
+  {
+    "why": "full-width forms fold",
+    "text": "ＡＢＣ１２３",
+    "tokens": [
+      "abc123"
+    ]
+  },
+  {
+    "why": "simple case mapping: no final sigma",
+    "text": "ΟΔΥΣΣΕΥΣ",
+    "tokens": [
+      "οδυσσευσ"
+    ]
+  },
+  {
+    "why": "İ lower-cases to i",
+    "text": "İSTANBUL",
+    "tokens": [
+      "istanbul"
+    ]
+  },
+  {
+    "why": "symbols separate words",
+    "text": "😀 test",
+    "tokens": [
+      "test"
+    ]
+  },
+  {
+    "why": "CJK beyond the BMP",
+    "text": "𠀀𠀁",
+    "tokens": [
+      "𠀀",
+      "𠀀𠀁",
+      "𠀁"
+    ]
+  },
+  {
+    "why": "U+FFFE separates words and never throws",
+    "text": "x￾y",
+    "tokens": [
+      "x",
+      "y"
+    ]
+  }
+]
