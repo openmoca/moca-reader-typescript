@@ -4,7 +4,9 @@
   "title": "MOCA envelope marker",
   "description": "moca-enc.json at the root of an encrypted package's envelope: the format marker and the optional, unverified outline. See spec/moca-encrypted-package.md sections 2 and 3.",
   "type": "object",
-  "required": ["format"],
+  "required": [
+    "format"
+  ],
   "properties": {
     "format": {
       "const": "moca-enc-v1"
@@ -21,7 +23,9 @@
         "license": true,
         "publisher": true,
         "mocaVersion": true,
-        "distribution": true
+        "distribution": true,
+        "translations": true,
+        "tags": true
       },
       "additionalProperties": false
     }

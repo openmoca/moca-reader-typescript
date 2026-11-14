@@ -4,7 +4,22 @@ All notable changes to @openmoca/moca-core. The format follows [Keep a Changelog
 
 ## [Unreleased]
 
-For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/5)).
+For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/5) and
+[moca-spec#7](https://github.com/openmoca/moca-spec/issues/7)).
+
+### Added (package spec §4.6–4.8)
+
+- `images`, `translations` and `tags` in the package result when the package
+  is valid. Each image is checked for presence, `limits.maxImageBytes`
+  (default 1 MiB) and the PNG, JPEG or WebP signature of its type, never
+  decoded (`M010`). Translation keys must be declared locales (`M011`);
+  repeated tags are dropped (`M012`); translated alt text for an unknown
+  image is dropped (`M013`).
+- Envelopes: the opt-in cover copy (`outline/cover.png`, `.jpg` or
+  `.webp`), at most one and within `maxImageBytes` (`E005`), checked
+  against the inner manifest's first cover (`E004`). `translations` and
+  `tags` may be outline properties.
+- The manifest and moca-enc schemas are copied from moca-spec.
 
 ### Added (encrypted packages §2–§6)
 

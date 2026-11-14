@@ -58,6 +58,9 @@ pkg.valid;          // boolean
 pkg.digest;         // 'sha256:…'
 pkg.capabilities;   // ['core', 'signed', ...]
 pkg.distribution;   // 'open', 'encrypted-only' or 'service-only': the publisher's intent, a label only
+pkg.images;         // [{ src, role, type, sizes?, alt? }]: the images that passed their checks; read the bytes from the package
+pkg.translations;   // { fr: { title?, description?, tags?, alt? } }: the manifest's own text per declared locale
+pkg.tags;           // ['refunds', ...]: without repeats
 pkg.diagnostics;    // [{ code, severity, message, file?, line? }]
 
 const library = new Library().add(pkg);

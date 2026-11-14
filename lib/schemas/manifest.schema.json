@@ -63,6 +63,25 @@
       "enum": ["open", "encrypted-only", "service-only"],
       "description": "How the publisher intends the package to be handed out. A label, not access control. Absent means open."
     },
+    "images": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "$ref": "#/$defs/image"
+      },
+      "description": "Pictures of the package for a catalogue: package files under media/, each with a role. See spec section 4.6."
+    },
+    "translations": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/translation"
+      },
+      "description": "The manifest's title, description, tags and image alt text in other languages, keyed by a tag in locales. See spec section 4.7."
+    },
+    "tags": {
+      "$ref": "#/$defs/tags",
+      "description": "Short plain labels in the default language. See spec section 4.8."
+    },
     "validFrom": {
       "type": "string",
       "anyOf": [
@@ -167,6 +186,84 @@
         },
         "note": {
           "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "image": {
+      "type": "object",
+      "required": [
+        "src",
+        "role",
+        "type"
+      ],
+      "properties": {
+        "src": {
+          "type": "string",
+          "pattern": "^media(?:/[^/\\\\]+)+(?![\\s\\S])",
+          "not": {
+            "pattern": "(?:^|/)\\.\\.?(?:/|$)"
+          },
+          "description": "A package path to a regular file under media/. Never a URL."
+        },
+        "role": {
+          "enum": [
+            "icon",
+            "cover"
+          ]
+        },
+        "type": {
+          "enum": [
+            "image/png",
+            "image/jpeg",
+            "image/webp"
+          ]
+        },
+        "sizes": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]*x[1-9][0-9]*(?: [1-9][0-9]*x[1-9][0-9]*)*(?![\\s\\S])",
+          "description": "Pixel sizes, informative."
+        },
+        "alt": {
+          "$ref": "#/$defs/alt"
+        }
+      },
+      "additionalProperties": false
+    },
+    "alt": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 250
+    },
+    "tags": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64,
+        "pattern": "^\\S(?:[\\s\\S]*\\S)?(?![\\s\\S])"
+      }
+    },
+    "translation": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "tags": {
+          "$ref": "#/$defs/tags"
+        },
+        "alt": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/alt"
+          },
+          "description": "An image's src to its alt text in this language."
         }
       },
       "additionalProperties": false
