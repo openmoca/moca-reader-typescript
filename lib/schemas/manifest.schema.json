@@ -82,6 +82,25 @@
       "$ref": "#/$defs/tags",
       "description": "Short plain labels in the default language. See spec section 4.8."
     },
+    "apps": {
+      "type": "array",
+      "maxItems": 16,
+      "uniqueItems": true,
+      "items": {
+        "anyOf": [
+          {
+            "type": "string",
+            "maxLength": 2048,
+            "pattern": "^https://[^/?#\\t\\n\\v\\f\\r    -     　﻿][^\\t\\n\\v\\f\\r    -     　﻿]*(?![\\s\\S])"
+          },
+          {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{0,63}(?![\\s\\S])"
+          }
+        ]
+      },
+      "description": "Where the publisher suggests the package is opened, beyond conversation: https: URIs naming apps and app-type tokens, first preferred. Advice only; never fetched. See spec section 4.9."
+    },
     "validFrom": {
       "type": "string",
       "anyOf": [

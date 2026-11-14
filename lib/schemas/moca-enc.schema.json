@@ -25,7 +25,8 @@
         "mocaVersion": true,
         "distribution": true,
         "translations": true,
-        "tags": true
+        "tags": true,
+        "apps": true
       },
       "additionalProperties": false
     }

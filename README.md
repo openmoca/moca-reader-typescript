@@ -61,6 +61,7 @@ pkg.distribution;   // 'open', 'encrypted-only' or 'service-only': the publisher
 pkg.images;         // [{ src, role, type, sizes?, alt? }]: the images that passed their checks; read the bytes from the package
 pkg.translations;   // { fr: { title?, description?, tags?, alt? } }: the manifest's own text per declared locale
 pkg.tags;           // ['refunds', ...]: without repeats
+pkg.apps;           // ['https://apps.example.com/legal-review', 'legal']: where the publisher suggests opening it; advice only
 pkg.diagnostics;    // [{ code, severity, message, file?, line? }]
 
 const library = new Library().add(pkg);
