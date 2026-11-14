@@ -35,6 +35,7 @@
   ],
   "exports": {
     ".": "./lib/index.js",
+    "./age": "./lib/age.js",
     "./lib/*": "./lib/*",
     "./package.json": "./package.json"
   },

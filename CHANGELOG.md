@@ -6,6 +6,18 @@ All notable changes to @openmoca/moca-core. The format follows [Keep a Changelog
 
 For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/5)).
 
+### Added (encrypted packages §4)
+
+- `@openmoca/moca-core/age`: decrypt-only age v1 on `node:crypto`, with no
+  new dependency. X25519 and scrypt recipients, no plugins, no armor. Strict
+  header parsing (64 KiB cap, canonical base64, scrypt alone, work-factor
+  limit checked before scrypt runs), constant-time MAC compare, and no
+  plaintext released before the whole payload authenticates. The core never
+  imports it: a host passes `ageDecryptor` to enable the `encryption`
+  feature. Tested against every applicable C2SP age test vector (CCTV, in
+  `test/fixtures/cctv-age/`), and against the Go age CLI on moca-spec's
+  envelope fixtures.
+
 ### Added (package spec §4.1)
 
 - `distribution` in the package result: the manifest's value, or `open`

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/moca/schemas/v1/moca-enc.schema.json",
+  "title": "MOCA envelope marker",
+  "description": "moca-enc.json at the root of an encrypted package's envelope: the format marker and the optional, unverified outline. See spec/moca-encrypted-package.md sections 2 and 3.",
+  "type": "object",
+  "required": ["format"],
+  "properties": {
+    "format": {
+      "const": "moca-enc-v1"
+    },
+    "outline": {
+      "description": "Inner manifest properties left readable, copied as JSON values. Unverified until the envelope is opened, then compared with the inner moca.json.",
+      "type": "object",
+      "properties": {
+        "id": true,
+        "version": true,
+        "title": true,
+        "description": true,
+        "language": true,
+        "license": true,
+        "publisher": true,
+        "mocaVersion": true,
+        "distribution": true
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
