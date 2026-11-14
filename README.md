@@ -48,7 +48,7 @@ asks:
 | --- | --- |
 | Class | Reader (the reference Reader) |
 | Contract version | 0.6.0 |
-| Optional capabilities | All implemented: archives, host sources, Sigstore bundle verification (offline, online when `online` is set), sidecars (lexical and dense), the ontology profile |
+| Optional capabilities | All implemented: archives, host sources, Sigstore bundle verification (offline, online when `online` is set), sidecars (lexical and dense), the ontology profile, `encryption` (with `@openmoca/moca-core/age`) |
 
 ```js
 import { readPackage, Library, Search, LexicalBackend, directoryResolver } from '@openmoca/moca-core';
@@ -66,6 +66,29 @@ await search.search('refund window', { limit: 5 }); // citation records, each wi
 library.get('https://example.com/moca/support-kb#refund-window.md', { locale: 'fr' });
 ```
 
+
+## Encrypted packages
+
+Envelopes ([encrypted packages](https://github.com/openmoca/moca-spec/blob/main/spec/moca-encrypted-package.md))
+open only when the host passes the age decryptor and a key provider. The core never imports the decryptor, so a host
+that does not want it never loads it.
+
+```js
+import { readPackage, bindEnvelopeSidecar } from '@openmoca/moca-core';
+import { ageDecryptor } from '@openmoca/moca-core/age';
+
+const options = {
+  decryptor: ageDecryptor,
+  // Keys come from host configuration only, never from the envelope or its outline.
+  keyProvider: ({ stanzas, outline, file }) => ({ identities: [process.env.MOCA_AGE_IDENTITY] }),
+};
+const pkg = await readPackage('handbook.moca.enc', options);
+pkg.envelope;       // { format: 'moca-enc-v1', opened: true }, or opened: false with the unverified outline
+const index = await bindEnvelopeSidecar('handbook.moca.enc', pkg, options); // index.age, if the envelope has one
+```
+
+Without `decryptor`, an envelope is reported with `E001` and nothing inside it is exposed. Decrypted bytes stay in
+memory; the Reader never writes them to a file.
 ## API
 
 | Export | Purpose |

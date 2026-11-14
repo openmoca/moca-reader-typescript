@@ -6,6 +6,18 @@ All notable changes to @openmoca/moca-core. The format follows [Keep a Changelog
 
 For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/5)).
 
+### Added (encrypted packages §2–§6)
+
+- Envelopes: recognised by content in a Zip path or bytes (a `.moca.enc`
+  path is sniffed as Zip); the entry and marker checks; the opening order of
+  encrypted packages §5.2 through the read options `decryptor` and
+  `keyProvider`; the outline check; the `envelope` result. `E001`–`E006`
+  join `lib/codes.js`, and the `E` family makes a package invalid.
+- `limits.maxScryptWorkFactor` (default 20).
+- `bindEnvelopeSidecar()`: `index.age` through the same key provider; a
+  failure makes the sidecar unusable and never changes validity.
+- The moca-enc schema is bundled (`mocaEnc`).
+
 ### Added (encrypted packages §4)
 
 - `@openmoca/moca-core/age`: decrypt-only age v1 on `node:crypto`, with no
