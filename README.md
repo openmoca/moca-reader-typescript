@@ -57,6 +57,7 @@ const pkg = await readPackage('kb', { trustRoot: 'trust-root.json', resolveMembe
 pkg.valid;          // boolean
 pkg.digest;         // 'sha256:…'
 pkg.capabilities;   // ['core', 'signed', ...]
+pkg.distribution;   // 'open', 'encrypted-only' or 'service-only': the publisher's intent, a label only
 pkg.diagnostics;    // [{ code, severity, message, file?, line? }]
 
 const library = new Library().add(pkg);

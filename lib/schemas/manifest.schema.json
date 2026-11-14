@@ -59,6 +59,10 @@
     "publisher": {
       "type": "string"
     },
+    "distribution": {
+      "enum": ["open", "encrypted-only", "service-only"],
+      "description": "How the publisher intends the package to be handed out. A label, not access control. Absent means open."
+    },
     "validFrom": {
       "type": "string",
       "anyOf": [

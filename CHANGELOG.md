@@ -2,6 +2,16 @@
 
 All notable changes to @openmoca/moca-core. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/5)).
+
+### Added (package spec §4.1)
+
+- `distribution` in the package result: the manifest's value, or `open`
+  when it has none; absent when the manifest fails its schema. It is a label
+  only and changes nothing else the Reader does.
+
 ## [0.6.0] - 2026-11-11
 
 ### Added (attestations §5, §6)
