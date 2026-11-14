@@ -45,9 +45,10 @@ test('a narrower cycle does not stop placement, and each concept keeps its first
 test('a package state carries the reading order as JSON, and a store search applies it', async () => {
   const ttl = 'c:A a skos:Concept .\nc:B a skos:Concept .\nc:__proto__ a skos:Concept .\n'
     + 'c:Path a skos:OrderedCollection ; skos:memberList ( c:A c:B ) .\n';
+  // __proto__ is off the reading order: a lookup must not find Object.prototype.
   const r = await readPackage(makePackage(ttl, { 'content/a.md': node(['A']), 'content/b.md': node(['B']), 'content/p.md': node(['__proto__']) }));
   const state = JSON.parse(JSON.stringify(packageState(r)));
-  assert.deepEqual(state.readingOrder, { iri: `${B}Path`, members: [`${B}A`, `${B}B`], positions: [[`${B}A`, 0], [`${B}B`, 1]] });
+  assert.deepEqual(state.readingOrder, { iri: `${B}Path`, members: [`${B}A`, `${B}B`], positions: { [`${B}A`]: 0, [`${B}B`]: 1 } });
   const store = { features: [], search: () => r.nodes.map((n) => ({ record: citationFor(r, n, n.representations[0], { now: new Date() }), score: 1 })) };
   const paths = (await new Search({ packages: [state] }, { backend: store }).search('x', { limit: 10, upTo: `${B}A` })).map((x) => x.node.path).sort();
   assert.deepEqual(paths, ['a.md', 'p.md']);
@@ -57,4 +58,14 @@ test('readingOrder is ignored, without M014, when the manifest fails its schema'
   const r = await readPackage(makePackage(null, undefined, { readingOrder: 'not an iri' }));
   assert.deepEqual(codes(r), ['M002_MANIFEST_SCHEMA']);
   assert.equal(r.readingOrder, undefined);
+});
+
+test('a concept named __proto__ on the reading order survives a JSON round trip of the state', async () => {
+  const ttl = 'c:A a skos:Concept .\nc:__proto__ a skos:Concept .\nc:Path a skos:OrderedCollection ; skos:memberList ( c:A c:__proto__ ) .\n';
+  const r = await readPackage(makePackage(ttl, { 'content/a.md': node(['A']), 'content/p.md': node(['__proto__']) }));
+  const state = JSON.parse(JSON.stringify(packageState(r)));
+  assert.equal(Object.hasOwn(state.readingOrder.positions, `${B}__proto__`), true);
+  const store = { features: [], search: () => r.nodes.map((n) => ({ record: citationFor(r, n, n.representations[0], { now: new Date() }), score: 1 })) };
+  const paths = (await new Search({ packages: [state] }, { backend: store }).search('x', { limit: 10, upTo: `${B}A` })).map((x) => x.node.path);
+  assert.deepEqual(paths, ['a.md']);
 });
