@@ -9,6 +9,28 @@ For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/
 [moca-spec#8](https://github.com/openmoca/moca-spec/issues/8) and
 [moca-spec#9](https://github.com/openmoca/moca-spec/issues/9)).
 
+### Changed (encrypted packages: hardening)
+
+- Opening an envelope never throws to the caller (only cancellation does): an
+  unexpected failure is `E006` while parsing the header and `E002` after.
+- `limits.maxScryptWorkFactor` must be an integer from 1 to 22; anything else
+  is refused as a host error, and `parseHeader` refuses it too.
+- The key provider's result is checked: not an object is `E001`, a member of
+  the wrong type or a file key that is not 16 bytes is `E002`. A result with
+  several kinds is tried identities, passphrase, then file key.
+- The plaintext length is computed from the payload length before any
+  decryption (`T003` over `maxBytes`, `E003` when impossible), and the
+  payload is decrypted into one buffer of that size. The header is parsed
+  from its first 64 KiB only.
+- A key provider's error message never appears in a diagnostic.
+- Key material and partial plaintext are zeroed after use where Node allows.
+- At most 256 recipient stanzas (`E006`).
+- scrypt runs asynchronously, off the event loop: `ageDecryptor.decrypt` now
+  returns a promise. `createAgeDecryptor` makes one with another scrypt, for
+  tests. Called directly, `decrypt` applies the default `maxBytes`.
+- Tests: the hybrid CCTV vectors run parse-only; provider results; limits;
+  the header size; CI installs the Go age CLI and requires it on Linux.
+
 ### Added (attestations §3a and §7.1: issued copies)
 
 - Issued-copy attestations (`PREDICATE_ISSUED_COPY`, `issuedCopyStatement`)

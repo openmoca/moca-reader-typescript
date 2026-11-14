@@ -67,8 +67,19 @@ jobs:
           cache-dependency-path: '*/package-lock.json'
       - run: npm ci
         working-directory: moca-reader-typescript
+      # The Go age CLI (pinned, checksum-checked) for the age cross-check. On Linux it is required, so the
+      # cross-check can never skip there (MOCA_REQUIRE_GO_AGE).
+      - name: Install the Go age CLI
+        if: runner.os == 'Linux'
+        run: |
+          curl -fsSLo "$RUNNER_TEMP/age.tar.gz" https://github.com/FiloSottile/age/releases/download/v1.3.2/age-v1.3.2-linux-amd64.tar.gz
+          echo "cbe24006683f8eb669266162894b9a522a1af52f2665fbc63a4bb032ed26ac10  $RUNNER_TEMP/age.tar.gz" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/age.tar.gz" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/age" >> "$GITHUB_PATH"
       - run: npm test
         working-directory: moca-reader-typescript
+        env:
+          MOCA_REQUIRE_GO_AGE: ${{ runner.os == 'Linux' && '1' || '' }}
 
   # Phase 1's gate: the getting-started guide works as written (docs/getting-started.md).
   guide:

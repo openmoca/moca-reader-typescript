@@ -103,3 +103,33 @@ test('index.age binds through the same key provider; a failure leaves the packag
     rmSync(dir, { recursive: true });
   }
 });
+
+test('a key provider error never reaches a diagnostic: only its type name does', { skip }, async () => {
+  const r = await readPackage(join(envelopes, 'x25519.moca.enc'), {
+    decryptor: ageDecryptor,
+    keyProvider: () => { throw new TypeError('vault https://vault.example/v1?token=s3cret is offline'); },
+  });
+  const [d] = r.diagnostics;
+  assert.equal(d.code, 'E001_ENCRYPTED_NO_KEY');
+  assert.ok(!/s3cret|vault\.example/.test(d.message), d.message);
+  assert.match(d.message, /TypeError/);
+});
+
+test('nothing a decryptor throws reaches the caller: E006 while parsing, E002 after', { skip }, async () => {
+  const boom = () => { throw new RangeError('internal'); };
+  const parse = await readPackage(join(envelopes, 'x25519.moca.enc'), { decryptor: { parseHeader: boom, decrypt: boom }, keyProvider: () => ({ identities: [] }) });
+  assert.deepEqual(parse.diagnostics.map((d) => d.code), ['E006_AGE_HEADER_INVALID']);
+  const later = await readPackage(join(envelopes, 'x25519.moca.enc'), { decryptor: { parseHeader: ageDecryptor.parseHeader, decrypt: boom }, keyProvider: () => ({ identities: [] }) });
+  assert.deepEqual(later.diagnostics.map((d) => d.code), ['E002_DECRYPTION_FAILED']);
+  // Odd provider results: not an object is E001; members of the wrong type are E002.
+  for (const [result, code] of [[42, 'E001_ENCRYPTED_NO_KEY'], [[], 'E001_ENCRYPTED_NO_KEY'], [{ identities: [7] }, 'E002_DECRYPTION_FAILED'], [{ fileKey: [1, 2] }, 'E002_DECRYPTION_FAILED']]) {
+    const r = await readPackage(join(envelopes, 'x25519.moca.enc'), { decryptor: ageDecryptor, keyProvider: () => result });
+    assert.deepEqual(r.diagnostics.map((d) => d.code), [code], JSON.stringify(result));
+  }
+});
+
+test('a work-factor limit outside 1–22 is a host error', { skip }, async () => {
+  for (const bad of [Number.NaN, 40, 0]) {
+    await assert.rejects(readPackage(join(envelopes, 'passphrase.moca.enc'), { ...withKey(identityFile), limits: { maxScryptWorkFactor: bad } }), RangeError);
+  }
+});
