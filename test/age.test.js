@@ -202,6 +202,13 @@ test('envelope fixtures decrypt identically here and with the Go age CLI', { ski
       if (!(err instanceof AgeError)) throw err;
       ours = null;
     }
+    // MOCA's own limit: a header over 64 KiB is E006 here, and Go age has no such limit.
+    if (name === 'header-over-64k.moca.enc') {
+      assert.equal(ours, null);
+      assert.equal(go.status, 0);
+      compared += 1;
+      continue;
+    }
     // The mixed-stanza fixture: Go age fails at the MAC, this module at the header. Both refuse it.
     assert.equal(ours !== null, go.status === 0, `${name}: this module ${ours ? 'decrypts' : 'refuses'}, Go age ${go.status === 0 ? 'decrypts' : 'refuses'}`);
     if (ours) assert.deepEqual(Buffer.from(ours), go.stdout, `${name}: the plaintexts differ`);
