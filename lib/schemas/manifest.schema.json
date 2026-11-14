@@ -101,6 +101,11 @@
       },
       "description": "Where the publisher suggests the package is opened, beyond conversation: https: URIs naming apps and app-type tokens, first preferred. Advice only; never fetched. See spec section 4.9."
     },
+    "readingOrder": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\t\\n\\v\\f\\r    -     　﻿]+(?![\\s\\S])",
+      "description": "The IRI of the skos:OrderedCollection in the package's own structure.ttl that orders the whole package. See spec section 4.10."
+    },
     "validFrom": {
       "type": "string",
       "anyOf": [

@@ -62,11 +62,13 @@ pkg.images;         // [{ src, role, type, sizes?, alt? }]: the images that pass
 pkg.translations;   // { fr: { title?, description?, tags?, alt? } }: the manifest's own text per declared locale
 pkg.tags;           // ['refunds', ...]: without repeats
 pkg.apps;           // ['https://apps.example.com/legal-review', 'legal']: where the publisher suggests opening it; advice only
+pkg.readingOrder;   // 'https://example.com/moca/course#path': the ordered collection the package is read in, when it resolves
 pkg.diagnostics;    // [{ code, severity, message, file?, line? }]
 
 const library = new Library().add(pkg);
 const search = new Search(library, { backend: new LexicalBackend(library), audiences: ['public'] });
 await search.search('refund window', { limit: 5 }); // citation records, each with a score
+await search.search('exercise', { upTo: 'https://example.com/moca/course#module-2' }); // nothing from after module 2
 library.get('https://example.com/moca/support-kb#refund-window.md', { locale: 'fr' });
 ```
 
@@ -99,7 +101,7 @@ memory; the Reader never writes them to a file.
 | --- | --- |
 | `readPackage(target, options)` | Read and check a package. `target`: path, `.moca`/`.zip` path, or `{ list(), read(path) }`. Options: `trustRoot`, `resolveMember`, `strict`, `limits`, `online`, `allowOfflineFallback`, `tufCachePath`. |
 | `Library` | Holds verified packages (and their sidecar `chunks` and `index`); `citations()`, `get()`, and `search()` as a synchronous lexical shortcut; applies relations. Takes a `clock` for testing. |
-| `Search` | One entry point over a backend: `search(query, { limit, includeAll, locale, concepts, scope })`, with optional `hooks: { ingress, egress }`. The gate always runs last ([Reader contract §9](https://github.com/openmoca/moca-spec/blob/main/spec/moca-reader-contract.md#9-search)). `new Search({ digests, clock }, { backend })` searches a store from its ingest-time records. |
+| `Search` | One entry point over a backend: `search(query, { limit, includeAll, locale, concepts, scope, upTo })`, with optional `hooks: { ingress, egress }`. The gate always runs last ([Reader contract §9](https://github.com/openmoca/moca-spec/blob/main/spec/moca-reader-contract.md#9-search)). `new Search({ digests, clock }, { backend })` searches a store from its ingest-time records. |
 | `LexicalBackend`, `DenseBackend`, `MemoryStoreBackend` | Backends: BM25 over package text or sidecar chunks; sidecar vectors with a host embedder (`S006` on a model mismatch, `S007` for a package without vectors); a reference in-memory store. |
 | `selectorMatches(selector, text)` | The evidence check behind `evidence[].matched` and `C011`. |
 | `bindSidecar(target, pkg)` | Check a sidecar against a package and return usable chunks. |
