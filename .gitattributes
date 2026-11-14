@@ -2,3 +2,5 @@
 # have the same line endings on every platform.
 * text=auto eol=lf
 *.zip binary
+# C2SP age test vectors test exact bytes, CR and CRLF included.
+test/fixtures/cctv-age/** binary

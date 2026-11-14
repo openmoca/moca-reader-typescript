@@ -2,6 +2,62 @@
 
 All notable changes to @openmoca/moca-core. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/5) and
+[moca-spec#7](https://github.com/openmoca/moca-spec/issues/7) and
+[moca-spec#8](https://github.com/openmoca/moca-spec/issues/8)).
+
+### Added (package spec §4.9)
+
+- `apps` in the package result, as declared, when the manifest passes its
+  schema. Advice only: the Reader never fetches, resolves or opens an app
+  URI. `apps` may be an outline property of an envelope.
+
+### Added (package spec §4.6–4.8)
+
+- `images`, `translations` and `tags` in the package result when the package
+  is valid. Each image is checked for presence, `limits.maxImageBytes`
+  (default 1 MiB) and the PNG, JPEG or WebP signature of its type, never
+  decoded (`M010`). Translation keys must be declared locales (`M011`);
+  repeated tags are dropped (`M012`); translated alt text for an unknown
+  image is dropped (`M013`).
+- Envelopes: the opt-in cover copy (`outline/cover.png`, `.jpg` or
+  `.webp`), at most one and within `maxImageBytes` (`E005`), checked
+  against the inner manifest's first cover (`E004`). `translations` and
+  `tags` may be outline properties.
+- The manifest and moca-enc schemas are copied from moca-spec.
+
+### Added (encrypted packages §2–§6)
+
+- Envelopes: recognised by content in a Zip path or bytes (a `.moca.enc`
+  path is sniffed as Zip); the entry and marker checks; the opening order of
+  encrypted packages §5.2 through the read options `decryptor` and
+  `keyProvider`; the outline check; the `envelope` result. `E001`–`E006`
+  join `lib/codes.js`, and the `E` family makes a package invalid.
+- `limits.maxScryptWorkFactor` (default 20).
+- `bindEnvelopeSidecar()`: `index.age` through the same key provider; a
+  failure makes the sidecar unusable and never changes validity.
+- The moca-enc schema is bundled (`mocaEnc`).
+
+### Added (encrypted packages §4)
+
+- `@openmoca/moca-core/age`: decrypt-only age v1 on `node:crypto`, with no
+  new dependency. X25519 and scrypt recipients, no plugins, no armor. Strict
+  header parsing (64 KiB cap, canonical base64, scrypt alone, work-factor
+  limit checked before scrypt runs), constant-time MAC compare, and no
+  plaintext released before the whole payload authenticates. The core never
+  imports it: a host passes `ageDecryptor` to enable the `encryption`
+  feature. Tested against every applicable C2SP age test vector (CCTV, in
+  `test/fixtures/cctv-age/`), and against the Go age CLI on moca-spec's
+  envelope fixtures.
+
+### Added (package spec §4.1)
+
+- `distribution` in the package result: the manifest's value, or `open`
+  when it has none; absent when the manifest fails its schema. It is a label
+  only and changes nothing else the Reader does.
+
 ## [0.6.0] - 2026-11-11
 
 ### Added (attestations §5, §6)
