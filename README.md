@@ -63,6 +63,7 @@ pkg.translations;   // { fr: { title?, description?, tags?, alt? } }: the manife
 pkg.tags;           // ['refunds', ...]: without repeats
 pkg.apps;           // ['https://apps.example.com/legal-review', 'legal']: where the publisher suggests opening it; advice only
 pkg.readingOrder;   // 'https://example.com/moca/course#path': the ordered collection the package is read in, when it resolves
+pkg.issuedCopy;     // { originalDigest, issuers, changedFiles } for an issued copy bound to its publisher's package
 pkg.diagnostics;    // [{ code, severity, message, file?, line? }]
 
 const library = new Library().add(pkg);

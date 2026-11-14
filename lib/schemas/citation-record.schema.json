@@ -37,6 +37,27 @@
           "items": {
             "type": "string"
           }
+        },
+        "issuedCopy": {
+          "type": "object",
+          "required": [
+            "originalDigest",
+            "issuers"
+          ],
+          "properties": {
+            "originalDigest": {
+              "type": "string",
+              "pattern": "^sha256:[a-f0-9]{64}(?![\\s\\S])"
+            },
+            "issuers": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false,
+          "description": "Set for an issued copy bound to its publisher's package (attestations §7.1): the original digest, the same for every copy, and the issuers' signers."
         }
       },
       "additionalProperties": false
@@ -82,6 +103,10 @@
           "type": "string",
           "minLength": 1,
           "description": "Versioned node reference: <package id>@<version>#<path>. Unique across package versions; use it as the citation key."
+        },
+        "issuedChange": {
+          "type": "boolean",
+          "description": "true when the record comes from a file the issuer of an issued copy changed (attestations §7.1). Absent otherwise."
         }
       },
       "additionalProperties": false
@@ -197,6 +222,10 @@
               },
               "signer": {
                 "type": "string"
+              },
+              "fileChanged": {
+                "type": "boolean",
+                "description": "true for a review of a file the issuer of an issued copy changed. It never counts toward reviewStatus (attestations §7.1)."
               },
               "packageVerified": {
                 "type": "boolean",
