@@ -14,10 +14,12 @@ For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/
 - `readingOrder` in the package result when it names an ordered collection
   with a member list in the package's own `structure.ttl`; otherwise
   `M014_READING_ORDER_UNRESOLVED` (warning) and it is ignored.
-- The search option `upTo`: in a package whose reading order has it as a
-  member, records bound to a concept placed after it are left out. Records
-  off the reading order, and other packages, are not limited. It runs in
-  the gate and follows the caller only.
+- The search option `upTo`: in a package whose reading order places it (a
+  member, or a descendant placed at the first member that contains it),
+  records bound to a concept placed after it are left out. Records off the
+  reading order, and other packages, are not limited. It runs in the gate
+  and follows the caller only. When no loaded reading order places it,
+  `search.diagnostics` holds `S008_UPTO_UNRESOLVED` (warning).
 - `packageState` carries the reading order, so a store search applies
   `upTo` too.
 

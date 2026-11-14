@@ -69,3 +69,14 @@ test('a concept named __proto__ on the reading order survives a JSON round trip 
   const paths = (await new Search({ packages: [state] }, { backend: store }).search('x', { limit: 10, upTo: `${B}A` })).map((x) => x.node.path);
   assert.deepEqual(paths, ['a.md']);
 });
+
+test('S008 is reported for the latest search only, and a store search reports it too', async () => {
+  const ttl = 'c:A a skos:Concept .\nc:Path a skos:OrderedCollection ; skos:memberList ( c:A ) .\n';
+  const r = await readPackage(makePackage(ttl, { 'content/a.md': node(['A']) }));
+  const store = { features: [], search: () => r.nodes.map((n) => ({ record: citationFor(r, n, n.representations[0], { now: new Date() }), score: 1 })) };
+  const search = new Search({ packages: [packageState(r)] }, { backend: store });
+  await search.search('x', { upTo: `${B}Nowhere` });
+  assert.deepEqual(search.diagnostics.map((d) => d.code), ['S008_UPTO_UNRESOLVED']);
+  await search.search('x', { upTo: `${B}A` });
+  assert.deepEqual(search.diagnostics, []);
+});
