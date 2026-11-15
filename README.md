@@ -105,6 +105,7 @@ memory; the Reader never writes them to a file.
 | `Library` | Holds verified packages (and their sidecar `chunks` and `index`); `citations()`, `get()`, and `search()` as a synchronous lexical shortcut; applies relations. Takes a `clock` for testing. |
 | `Search` | One entry point over a backend: `search(query, { limit, includeAll, locale, concepts, scope, upTo })`, with optional `hooks: { ingress, egress }`; `search.diagnostics` holds the latest call's findings, such as `S008`. The gate always runs last ([Reader contract §9](https://github.com/openmoca/moca-spec/blob/main/spec/moca-reader-contract.md#9-search)). `new Search({ digests, clock }, { backend })` searches a store from its ingest-time records. |
 | `LexicalBackend`, `DenseBackend`, `MemoryStoreBackend` | Backends: BM25 over package text or sidecar chunks; sidecar vectors with a host embedder (`S006` on a model mismatch, `S007` for a package without vectors); a reference in-memory store. |
+| `mapTime(record, from, to, t)` | The same moment on another media description of the record's node: switch between the audio and video versions of an episode ([package spec §5.7](https://github.com/openmoca/moca-spec/blob/main/spec/moca-package-spec.md#57-media)). `null` when it is not there. |
 | `selectorMatches(selector, text)` | The evidence check behind `evidence[].matched` and `C011`. |
 | `bindSidecar(target, pkg)` | Check a sidecar against a package and return usable chunks. |
 | `directoryResolver(dirs)` | A simple member resolver over folders. |

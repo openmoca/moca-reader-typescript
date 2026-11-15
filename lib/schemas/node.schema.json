@@ -166,6 +166,36 @@
         "transcript": {
           "type": "string",
           "minLength": 1
+        },
+        "alternateOf": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The `source` of the description this one is an alternate of."
+        },
+        "sync": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Stretches of the reference's timeline, in order of `at` (spec/moca-package-spec.md §5.7).",
+          "items": {
+            "type": "object",
+            "required": [
+              "at",
+              "offset"
+            ],
+            "properties": {
+              "at": {
+                "type": "number",
+                "minimum": 0
+              },
+              "offset": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
