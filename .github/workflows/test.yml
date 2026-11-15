@@ -18,7 +18,7 @@ permissions:
 # The other MOCA repositories, at fixed refs: release tags, or commits while a Spec Change
 # Proposal is in flight; never a branch (moca-spec CONTRIBUTING.md).
 env:
-  MOCA_SPEC_REF: 42f1ff5de96d4470433735617f8ff9831b51ad6b  # 0.7.0 release candidate; v0.7.0 once tagged
+  MOCA_SPEC_REF: 25dcbd90b69e5050908c7bef3e29ecd1a9d47dfd  # 0.7.0 release candidate; v0.7.0 once tagged
   MOCA_TOOLS_REF: 685268d93ac5d741bed9b8621145c93338627829  # 0.7.0 release candidate; v0.7.0 once tagged
 
 jobs:
