@@ -38,6 +38,18 @@
     "description": {
       "type": "string"
     },
+    "datePublished": {
+      "type": "string",
+      "anyOf": [
+        {
+          "format": "date-time"
+        },
+        {
+          "format": "date"
+        }
+      ],
+      "description": "When the package was first published: the W3C Publication Manifest's datePublished (spec/moca-package-spec.md §4.12). Informative."
+    },
     "language": {
       "type": "string",
       "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*(?![\\s\\S])",

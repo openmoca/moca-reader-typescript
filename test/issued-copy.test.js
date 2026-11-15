@@ -46,3 +46,40 @@ test('a record from an unchanged file has no issuedChange', async () => {
   assert.equal(rec.node.issuedChange, undefined);
   assert.equal(rec.package.issuedCopy.issuers.length, 1);
 });
+
+// Sidecar spec §5: the publisher's dense sidecar on an issued copy. The changed file's items are replaced, and the
+// vector rows of the items after them stay with their own items.
+test('a dense sidecar bound to an issued copy keeps each vector with its item', async () => {
+  const { mkdtempSync, writeFileSync, mkdirSync, cpSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const dir = mkdtempSync(join(tmpdir(), 'moca-sidecar-'));
+  cpSync(join(FIX, 'sidecars', 'issued-original'), dir, { recursive: true });
+  const index = JSON.parse(readFileSync(join(dir, 'index.json'), 'utf8'));
+  index.indexType = 'dense';
+  index.model = { name: 'test-model', dimensions: 2 };
+  index.storage.vectors = { file: 'payload/vectors.f32', dtype: 'float32', dimensions: 2 };
+  writeFileSync(join(dir, 'index.json'), JSON.stringify(index));
+  // One row per item, in payload order: intro.md, lessons/one.md (changed in the copy), lessons/two.md.
+  const rows = new Float32Array([1, 0, 0.5, 0.5, 0, 1]);
+  mkdirSync(join(dir, 'payload'), { recursive: true });
+  writeFileSync(join(dir, 'payload', 'vectors.f32'), Buffer.from(rows.buffer));
+  const copy = await readPackage(join(FIX, 'issued', 'copy-valid'), { trustRoot: TRUST, clock });
+  const { bindSidecar } = await import('../lib/index.js');
+  const bound = bindSidecar(dir, copy);
+  assert.equal(bound.usable, true);
+  assert.deepEqual(bound.diagnostics.map((d) => d.code), ['S009_SIDECAR_ITEMS_REPLACED']);
+  const byPath = Object.fromEntries(bound.chunks.map((c) => [c.path, c]));
+  assert.deepEqual(byPath['intro.md'].vector, [1, 0]);
+  assert.deepEqual(byPath['lessons/two.md'].vector, [0, 1]);
+  assert.equal(byPath['lessons/one.md'].vector, undefined);
+  const rep = copy.nodes.find((n) => n.path === 'lessons/one.md').representations[0];
+  assert.equal(byPath['lessons/one.md'].start, rep.bodyOffset);
+  assert.equal(byPath['lessons/one.md'].end, rep.bodyOffset + Buffer.byteLength(rep.body));
+});
+
+// Reader contract §3: the member limit counts every depth, so a long series needs room.
+test('maxMembers defaults to 4,096', async () => {
+  const { DEFAULT_LIMITS } = await import('../lib/source.js');
+  assert.equal(DEFAULT_LIMITS.maxMembers, 4096);
+  assert.equal(DEFAULT_LIMITS.maxMemberDepth, 8);
+});

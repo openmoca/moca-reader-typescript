@@ -38,6 +38,10 @@
             "type": "string"
           }
         },
+        "datePublished": {
+          "type": "string",
+          "description": "The manifest's datePublished, as written (spec/moca-package-spec.md §4.12)."
+        },
         "issuedCopy": {
           "type": "object",
           "required": [
@@ -107,6 +111,45 @@
         "issuedChange": {
           "type": "boolean",
           "description": "true when the record comes from a file the issuer of an issued copy changed (attestations §7.1). Absent otherwise."
+        },
+        "datePublished": {
+          "type": "string",
+          "description": "The node's moca.date_published, as written. Never copied from the package."
+        },
+        "media": {
+          "type": "array",
+          "description": "The node's valid media descriptions (spec/moca-package-spec.md §5.7), in order.",
+          "items": {
+            "type": "object",
+            "required": [
+              "source",
+              "resource",
+              "type"
+            ],
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "resource": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "duration": {
+                "type": "number",
+                "minimum": 0
+              },
+              "digest": {
+                "type": "string",
+                "pattern": "^sha256:[a-f0-9]{64}(?![\\s\\S])"
+              },
+              "transcript": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false

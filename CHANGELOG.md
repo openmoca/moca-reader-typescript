@@ -9,6 +9,20 @@ For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/
 [moca-spec#8](https://github.com/openmoca/moca-spec/issues/8) and
 [moca-spec#9](https://github.com/openmoca/moca-spec/issues/9)).
 
+### Added (podcast and video series content: package spec §4.12, §5.6, §5.7, §7.1–§7.3; sidecar spec §5)
+
+- Media descriptions (`moca.media`): validated (`C005`, `C006`), exposed as `node.media`, never fetched. A time range
+  that cites hosted media is checked against its `transcript` and counts toward `self-contained-evidence`.
+- Time ranges must also end within the media: at or before the latest cue end, or the declared duration when later.
+- `datePublished` on the result and `package.datePublished` on records; the node's own `node.datePublished`.
+- Binding by composition: a composing package's structure binds its resolved members' records for `concepts`,
+  `scope` and `upTo`; `upTo` limits the members of a package whose reading order places it. Package states carry
+  `composition`, so store searches agree. With bindings loaded, the `concepts` filter is applied in the gate only.
+- `isPartOf` is a core relation type; `R005_RELATION_TYPE_UNKNOWN` (info) for other undefined types.
+- An issued copy matches a member pin, and binds the publisher's sidecar, through its verified original digest. Items of
+  changed files are replaced by whole-body chunks without vectors (`S009_SIDECAR_ITEMS_REPLACED`).
+- `maxMembers` defaults to 4,096 (was 256).
+
 ### Changed (encrypted packages: hardening)
 
 - Opening an envelope never throws to the caller: an unexpected failure is

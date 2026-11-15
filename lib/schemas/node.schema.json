@@ -140,6 +140,36 @@
   },
   "additionalProperties": true,
   "$defs": {
+    "media": {
+      "type": "object",
+      "required": [
+        "source",
+        "type"
+      ],
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9!#$&^_.+-]{0,126}/[A-Za-z0-9][A-Za-z0-9!#$&^_.+-]{0,126}(?:[ \\t]*;[^\\n\\r]*)?(?![\\s\\S])"
+        },
+        "duration": {
+          "type": "number",
+          "minimum": 0
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}(?![\\s\\S])"
+        },
+        "transcript": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
     "source": {
       "type": "object",
       "required": [
@@ -252,6 +282,25 @@
           "additionalProperties": {
             "type": "object"
           }
+        },
+        "media": {
+          "type": "array",
+          "description": "Descriptions of the node's audio and video sources (spec/moca-package-spec.md §5.7).",
+          "items": {
+            "$ref": "#/$defs/media"
+          }
+        },
+        "date_published": {
+          "type": "string",
+          "anyOf": [
+            {
+              "format": "date-time"
+            },
+            {
+              "format": "date"
+            }
+          ],
+          "description": "When the node's content was first published (spec/moca-package-spec.md §4.12)."
         },
         "concepts": {
           "type": "array",
