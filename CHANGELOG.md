@@ -25,6 +25,15 @@ For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/
   invalid alternate) and carried in `node.media`. A time range on an alternate with no transcript is checked through its
   reference's transcript. `mapTime(record, from, to, t)` maps a moment between alternates.
 - `maxMembers` defaults to 4,096 (was 256).
+- Contract §3: a member met more than once in one read is resolved and read once, and shared; it counts once.
+  New limit `maxMemberBytes` (1 GiB) on the bytes of all the members one read reads. A reading order is walked once,
+  and bindings by composition keep only direct bindings and the links above them, so both take linear work. Package
+  states carry that form.
+- `upTo` limits a member's records by their own concepts on every composer's reading order, bound by composition
+  or not.
+- A source whose `id` is not a string has no `id` in every lookup.
+- `duration: .inf` and other non-finite numbers fail the node schema where it wants a number (`C005`), as in the
+  other Readers.
 - Frontmatter whose `sources` has two entries with the same `id` is `C002_FRONTMATTER_INVALID` (package spec
   §5.1), so the node is not read. Before, this Reader used the last entry.
 
