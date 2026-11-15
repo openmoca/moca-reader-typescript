@@ -2,7 +2,7 @@
 
 All notable changes to @openmoca/moca-core. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [0.7.0] - 2026-11-15
 
 For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/5) and
 [moca-spec#7](https://github.com/openmoca/moca-spec/issues/7) and
@@ -27,7 +27,8 @@ For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/
   decryption (`T003` over `maxBytes`, `E003` when impossible), and the
   payload is decrypted into one buffer of that size. The header is parsed
   from its first 64 KiB only. The ciphertext and the plaintext are passed on
-  as views, never copied: an archive given as bytes is read in place.
+  as views, never copied: an archive given as bytes is read in place, so
+  the host must not change those bytes during the read.
 - A key provider's error message never appears in a diagnostic.
 - Key material and partial plaintext are zeroed after use where Node allows.
 - At most 256 recipient stanzas (`E006`).

@@ -47,7 +47,7 @@ asks:
 | | |
 | --- | --- |
 | Class | Reader (the reference Reader) |
-| Contract version | 0.6.0 |
+| Contract version | 0.7.0 |
 | Optional capabilities | All implemented: archives, host sources, Sigstore bundle verification (offline, online when `online` is set), sidecars (lexical and dense), the ontology profile, `encryption` (with `@openmoca/moca-core/age`) |
 
 ```js
@@ -100,7 +100,7 @@ memory; the Reader never writes them to a file.
 
 | Export | Purpose |
 | --- | --- |
-| `readPackage(target, options)` | Read and check a package. `target`: path, `.moca`/`.zip` path, or `{ list(), read(path) }`. Options: `trustRoot`, `resolveMember`, `strict`, `limits`, `online`, `allowOfflineFallback`, `tufCachePath`. |
+| `readPackage(target, options)` | Read and check a package. `target`: path, `.moca`/`.zip` path, archive bytes (a `Uint8Array`, read in place: do not change it during the read), or `{ list(), read(path) }`. Options: `trustRoot`, `resolveMember`, `strict`, `limits`, `online`, `allowOfflineFallback`, `tufCachePath`. |
 | `Library` | Holds verified packages (and their sidecar `chunks` and `index`); `citations()`, `get()`, and `search()` as a synchronous lexical shortcut; applies relations. Takes a `clock` for testing. |
 | `Search` | One entry point over a backend: `search(query, { limit, includeAll, locale, concepts, scope, upTo })`, with optional `hooks: { ingress, egress }`; `search.diagnostics` holds the latest call's findings, such as `S008`. The gate always runs last ([Reader contract §9](https://github.com/openmoca/moca-spec/blob/main/spec/moca-reader-contract.md#9-search)). `new Search({ digests, clock }, { backend })` searches a store from its ingest-time records. |
 | `LexicalBackend`, `DenseBackend`, `MemoryStoreBackend` | Backends: BM25 over package text or sidecar chunks; sidecar vectors with a host embedder (`S006` on a model mismatch, `S007` for a package without vectors); a reference in-memory store. |
