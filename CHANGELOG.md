@@ -22,6 +22,8 @@ For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/
 - An issued copy matches a member pin, and binds the publisher's sidecar, through its verified original digest. Items of
   changed files are replaced by whole-body chunks without vectors (`S009_SIDECAR_ITEMS_REPLACED`).
 - `maxMembers` defaults to 4,096 (was 256).
+- Frontmatter whose `sources` has two entries with the same `id` is `C002_FRONTMATTER_INVALID` (package spec
+  §5.1), so the node is not read. Before, this Reader used the last entry.
 
 ### Changed (encrypted packages: hardening)
 
