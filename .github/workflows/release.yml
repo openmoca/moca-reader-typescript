@@ -1,0 +1,40 @@
+name: Release
+
+# Push a vX.Y.Z tag on a commit in main: publishes @openmoca/moca-core to npm with provenance.
+#
+# Trusted publishing: npm accepts this workflow, in the `release` environment, through a short-lived
+# OIDC token from GitHub Actions. There is no npm token in this repository. Publish this package
+# before moca-tools, whose packages depend on it.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: The tag is on main and matches the version
+        run: |
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main || { echo "::error::$GITHUB_REF_NAME is not on main"; exit 1; }
+          version=$(node -p "require('./package.json').version")
+          [ "v$version" = "$GITHUB_REF_NAME" ] || { echo "::error::package.json is $version, the tag is $GITHUB_REF_NAME"; exit 1; }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      # Trusted publishing needs npm 11.5.1 or later.
+      - run: npm install -g npm@^11.5.1
+      - run: npm ci
+      - run: npm run check:schemas
+      - run: npm publish --access public
