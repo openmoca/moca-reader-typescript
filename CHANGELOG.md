@@ -51,6 +51,8 @@ For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/
   time range checked.
 - A number too large to be finite, such as `1e400` or a very long integer, is read as `.inf` is (package spec §5.1),
   not as a string. No step spreads a long list into one call's arguments, so a transcript of many cues is checked.
+- An implicit mapping key longer than 1,024 characters is `C002_FRONTMATTER_INVALID`, as YAML 1.2 says and as in
+  the other Readers (package spec §5.1).
 
 ### Changed (encrypted packages: hardening)
 
