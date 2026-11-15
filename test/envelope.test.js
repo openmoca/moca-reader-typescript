@@ -19,7 +19,7 @@ const withKey = (file) => ({ decryptor: ageDecryptor, keyProvider: () => ({ iden
 const skip = existsSync(envelopes) ? false : 'moca-spec has no envelope fixtures';
 
 test('without a decryptor, an envelope is recognised and not opened (E001)', { skip }, async () => {
-  const r = await readPackage(join(envelopes, 'x25519.moca.enc'), { keyProvider: () => ({ identities: identitiesIn(identityFile) }) });
+  const r = await readPackage(join(envelopes, 'x25519.mocae'), { keyProvider: () => ({ identities: identitiesIn(identityFile) }) });
   assert.equal(r.valid, false);
   assert.deepEqual(r.diagnostics.map((d) => d.code), ['E001_ENCRYPTED_NO_KEY']);
   assert.equal(r.envelope.opened, false);
@@ -31,26 +31,26 @@ test('without a decryptor, an envelope is recognised and not opened (E001)', { s
 });
 
 test('without a decryptor, the entry checks still run (E005 before E001)', { skip }, async () => {
-  const r = await readPackage(join(envelopes, 'extra-entry.moca.enc'));
+  const r = await readPackage(join(envelopes, 'extra-entry.mocae'));
   assert.deepEqual(r.diagnostics.map((d) => d.code), ['E005_ENVELOPE_INVALID']);
 });
 
 test('an envelope given as bytes opens like one given as a path', { skip }, async () => {
-  const bytes = new Uint8Array(readFileSync(join(envelopes, 'x25519.moca.enc')));
-  const [a, b] = await Promise.all([readPackage(bytes, withKey(identityFile)), readPackage(join(envelopes, 'x25519.moca.enc'), withKey(identityFile))]);
+  const bytes = new Uint8Array(readFileSync(join(envelopes, 'x25519.mocae')));
+  const [a, b] = await Promise.all([readPackage(bytes, withKey(identityFile)), readPackage(join(envelopes, 'x25519.mocae'), withKey(identityFile))]);
   assert.equal(a.valid, true);
   assert.equal(a.digest, b.digest);
   assert.deepEqual(a.envelope, { format: 'moca-enc-v1', opened: true });
 });
 
 test('a key provider that throws is E001, never thrown to the caller', { skip }, async () => {
-  const r = await readPackage(join(envelopes, 'x25519.moca.enc'), { decryptor: ageDecryptor, keyProvider: () => { throw new Error('vault offline'); } });
+  const r = await readPackage(join(envelopes, 'x25519.mocae'), { decryptor: ageDecryptor, keyProvider: () => { throw new Error('vault offline'); } });
   assert.deepEqual(r.diagnostics.map((d) => d.code), ['E001_ENCRYPTED_NO_KEY']);
 });
 
 test('the key provider gets the stanzas, the unverified outline and the file', { skip }, async () => {
   let seen;
-  await readPackage(join(envelopes, 'x25519.moca.enc'), { decryptor: ageDecryptor, keyProvider: (req) => { seen = req; return null; } });
+  await readPackage(join(envelopes, 'x25519.mocae'), { decryptor: ageDecryptor, keyProvider: (req) => { seen = req; return null; } });
   assert.equal(seen.file, 'package');
   assert.equal(seen.stanzas[0].type, 'X25519');
   assert.equal(seen.stanzas[0].body.length, 32);
@@ -66,7 +66,7 @@ test('an envelope opens with a temporary directory that cannot be written to', {
   Object.assign(process.env, { TMPDIR: locked, TMP: locked, TEMP: locked });
   try {
     assert.equal(tmpdir(), locked);
-    const r = await readPackage(join(envelopes, 'large.moca.enc'), withKey(identityFile));
+    const r = await readPackage(join(envelopes, 'large.mocae'), withKey(identityFile));
     assert.equal(r.valid, true);
     assert.equal(r.envelope.opened, true);
   } finally {
@@ -83,11 +83,11 @@ test('index.age binds through the same key provider; a failure leaves the packag
   sidecar.addLocalFolder(join(spec, 'conformance/fixtures/sidecars/valid'));
   const recipient = readFileSync(identityFile, 'utf8').match(/public key: (age1\w+)/)[1];
   const indexAge = spawnSync('age', ['-r', recipient], { input: sidecar.toBuffer() }).stdout;
-  const envelope = new AdmZip(join(envelopes, 'x25519.moca.enc'));
+  const envelope = new AdmZip(join(envelopes, 'x25519.mocae'));
   envelope.addFile('index.age', indexAge);
   envelope.getEntry('index.age').header.method = 0;
   const dir = mkdtempSync(join(tmpdir(), 'moca-index-age-'));
-  const path = join(dir, 'with-index.moca.enc');
+  const path = join(dir, 'with-index.mocae');
   envelope.writeZip(path);
   try {
     const pkg = await readPackage(path, withKey(identityFile));
@@ -105,7 +105,7 @@ test('index.age binds through the same key provider; a failure leaves the packag
 });
 
 test('a key provider error never reaches a diagnostic: only its type name does', { skip }, async () => {
-  const r = await readPackage(join(envelopes, 'x25519.moca.enc'), {
+  const r = await readPackage(join(envelopes, 'x25519.mocae'), {
     decryptor: ageDecryptor,
     keyProvider: () => { throw new TypeError('vault https://vault.example/v1?token=s3cret is offline'); },
   });
@@ -117,43 +117,43 @@ test('a key provider error never reaches a diagnostic: only its type name does',
 
 test('nothing a decryptor throws reaches the caller: E006 while parsing, E002 after', { skip }, async () => {
   const boom = () => { throw new RangeError('internal'); };
-  const parse = await readPackage(join(envelopes, 'x25519.moca.enc'), { decryptor: { parseHeader: boom, decrypt: boom }, keyProvider: () => ({ identities: [] }) });
+  const parse = await readPackage(join(envelopes, 'x25519.mocae'), { decryptor: { parseHeader: boom, decrypt: boom }, keyProvider: () => ({ identities: [] }) });
   assert.deepEqual(parse.diagnostics.map((d) => d.code), ['E006_AGE_HEADER_INVALID']);
-  const later = await readPackage(join(envelopes, 'x25519.moca.enc'), { decryptor: { parseHeader: ageDecryptor.parseHeader, decrypt: boom }, keyProvider: () => ({ identities: [] }) });
+  const later = await readPackage(join(envelopes, 'x25519.mocae'), { decryptor: { parseHeader: ageDecryptor.parseHeader, decrypt: boom }, keyProvider: () => ({ identities: [] }) });
   assert.deepEqual(later.diagnostics.map((d) => d.code), ['E002_DECRYPTION_FAILED']);
   // Odd provider results: not an object is E001; members of the wrong type are E002.
   for (const [result, code] of [[42, 'E001_ENCRYPTED_NO_KEY'], [[], 'E001_ENCRYPTED_NO_KEY'], [{ identities: [7] }, 'E002_DECRYPTION_FAILED'], [{ fileKey: [1, 2] }, 'E002_DECRYPTION_FAILED']]) {
-    const r = await readPackage(join(envelopes, 'x25519.moca.enc'), { decryptor: ageDecryptor, keyProvider: () => result });
+    const r = await readPackage(join(envelopes, 'x25519.mocae'), { decryptor: ageDecryptor, keyProvider: () => result });
     assert.deepEqual(r.diagnostics.map((d) => d.code), [code], JSON.stringify(result));
   }
 });
 
 test('a work-factor limit outside 1–22 is a host error', { skip }, async () => {
   for (const bad of [Number.NaN, 40, 0]) {
-    await assert.rejects(readPackage(join(envelopes, 'passphrase.moca.enc'), { ...withKey(identityFile), limits: { maxScryptWorkFactor: bad } }), RangeError);
+    await assert.rejects(readPackage(join(envelopes, 'passphrase.mocae'), { ...withKey(identityFile), limits: { maxScryptWorkFactor: bad } }), RangeError);
   }
 });
 
 test('an undefined work-factor limit is the default, and the limit is checked when the read starts', { skip }, async () => {
-  const r = await readPackage(join(envelopes, 'x25519.moca.enc'), { ...withKey(identityFile), limits: { maxScryptWorkFactor: undefined } });
+  const r = await readPackage(join(envelopes, 'x25519.mocae'), { ...withKey(identityFile), limits: { maxScryptWorkFactor: undefined } });
   assert.equal(r.valid, true);
   // An invalid limit is refused even when no envelope is read.
   await assert.rejects(readPackage(join(spec, 'examples/support-kb'), { limits: { maxScryptWorkFactor: 40 } }), RangeError);
-  await assert.rejects(bindEnvelopeSidecar(join(envelopes, 'x25519.moca.enc'), null, { limits: { maxScryptWorkFactor: 0 } }), RangeError);
+  await assert.rejects(bindEnvelopeSidecar(join(envelopes, 'x25519.mocae'), null, { limits: { maxScryptWorkFactor: 0 } }), RangeError);
 });
 
 test('null identities are E002, as in every Reader', { skip }, async () => {
-  const r = await readPackage(join(envelopes, 'x25519.moca.enc'), { decryptor: ageDecryptor, keyProvider: () => ({ identities: null }) });
+  const r = await readPackage(join(envelopes, 'x25519.mocae'), { decryptor: ageDecryptor, keyProvider: () => ({ identities: null }) });
   assert.deepEqual(r.diagnostics.map((d) => d.code), ['E002_DECRYPTION_FAILED']);
 });
 
 test('an AbortError from a provider or decryptor is a failure, not the host cancelling', { skip }, async () => {
   const abort = () => { throw new DOMException('timed out', 'AbortError'); };
-  const provider = await readPackage(join(envelopes, 'x25519.moca.enc'), { decryptor: ageDecryptor, keyProvider: abort });
+  const provider = await readPackage(join(envelopes, 'x25519.mocae'), { decryptor: ageDecryptor, keyProvider: abort });
   assert.deepEqual(provider.diagnostics.map((d) => d.code), ['E001_ENCRYPTED_NO_KEY']);
-  const parse = await readPackage(join(envelopes, 'x25519.moca.enc'), { decryptor: { parseHeader: abort, decrypt: abort }, keyProvider: () => ({ identities: [] }) });
+  const parse = await readPackage(join(envelopes, 'x25519.mocae'), { decryptor: { parseHeader: abort, decrypt: abort }, keyProvider: () => ({ identities: [] }) });
   assert.deepEqual(parse.diagnostics.map((d) => d.code), ['E006_AGE_HEADER_INVALID']);
-  const later = await readPackage(join(envelopes, 'x25519.moca.enc'), { decryptor: { parseHeader: ageDecryptor.parseHeader, decrypt: abort }, keyProvider: () => ({ identities: [] }) });
+  const later = await readPackage(join(envelopes, 'x25519.mocae'), { decryptor: { parseHeader: ageDecryptor.parseHeader, decrypt: abort }, keyProvider: () => ({ identities: [] }) });
   assert.deepEqual(later.diagnostics.map((d) => d.code), ['E002_DECRYPTION_FAILED']);
 });
 
@@ -168,7 +168,7 @@ test('the ciphertext and the plaintext are passed on in place, never copied (F4)
       return plain;
     },
   };
-  const archive = readFileSync(join(envelopes, 'x25519.moca.enc'));
+  const archive = readFileSync(join(envelopes, 'x25519.mocae'));
   const r = await readPackage(archive, { decryptor, keyProvider: () => ({ identities: identitiesIn(identityFile) }) });
   assert.equal(r.valid, true);
   const [[, parsed], [, decrypted], [, plain]] = seen;

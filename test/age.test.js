@@ -186,7 +186,7 @@ test('envelope fixtures decrypt identically here and with the Go age CLI', { ski
   const identities = readFileSync(identityFile, 'utf8').split('\n').filter((l) => l.startsWith('AGE-SECRET-KEY-1'));
   const passphrase = 'moca-conformance-INSECURE-passphrase';
   let compared = 0;
-  for (const name of readdirSync(envelopes).filter((n) => n.endsWith('.moca.enc'))) {
+  for (const name of readdirSync(envelopes).filter((n) => n.endsWith('.mocae'))) {
     const entry = new AdmZip(join(envelopes, name)).getEntry('package.age');
     if (!entry) continue;
     const bytes = new Uint8Array(entry.getData());
@@ -203,7 +203,7 @@ test('envelope fixtures decrypt identically here and with the Go age CLI', { ski
       ours = null;
     }
     // MOCA's own limit: a header over 64 KiB is E006 here, and Go age has no such limit.
-    if (name === 'header-over-64k.moca.enc') {
+    if (name === 'header-over-64k.mocae') {
       assert.equal(ours, null);
       assert.equal(go.status, 0);
       compared += 1;

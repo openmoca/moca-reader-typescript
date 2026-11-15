@@ -90,9 +90,9 @@ const options = {
   // Keys come from host configuration only, never from the envelope or its outline.
   keyProvider: ({ stanzas, outline, file }) => ({ identities: [process.env.MOCA_AGE_IDENTITY] }),
 };
-const pkg = await readPackage('handbook.moca.enc', options);
+const pkg = await readPackage('handbook.mocae', options);
 pkg.envelope;       // { format: 'moca-enc-v1', opened: true }, or opened: false with the unverified outline
-const index = await bindEnvelopeSidecar('handbook.moca.enc', pkg, options); // index.age, if the envelope has one
+const index = await bindEnvelopeSidecar('handbook.mocae', pkg, options); // index.age, if the envelope has one
 ```
 
 Without `decryptor`, an envelope is reported with `E001` and nothing inside it is exposed. Decrypted bytes stay in
