@@ -11,17 +11,23 @@ For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/
 
 ### Changed (encrypted packages: hardening)
 
-- Opening an envelope never throws to the caller (only cancellation does): an
-  unexpected failure is `E006` while parsing the header and `E002` after.
+- Opening an envelope never throws to the caller: an unexpected failure is
+  `E006` while parsing the header and `E002` after. This Reader takes no
+  cancellation signal, so an `AbortError` from a key provider or decryptor
+  (its own timeout) is a failure like any other.
 - `limits.maxScryptWorkFactor` must be an integer from 1 to 22; anything else
-  is refused as a host error, and `parseHeader` refuses it too.
+  is refused as a host error when `readPackage` or `bindEnvelopeSidecar`
+  starts, and `parseHeader` refuses it too. Left out or `undefined`, it is the
+  default (20).
 - The key provider's result is checked: not an object is `E001`, a member of
-  the wrong type or a file key that is not 16 bytes is `E002`. A result with
+  the wrong type (`identities: null` among them) or a file key that is not
+  16 bytes is `E002`. A result with
   several kinds is tried identities, passphrase, then file key.
 - The plaintext length is computed from the payload length before any
   decryption (`T003` over `maxBytes`, `E003` when impossible), and the
   payload is decrypted into one buffer of that size. The header is parsed
-  from its first 64 KiB only.
+  from its first 64 KiB only. The ciphertext and the plaintext are passed on
+  as views, never copied: an archive given as bytes is read in place.
 - A key provider's error message never appears in a diagnostic.
 - Key material and partial plaintext are zeroed after use where Node allows.
 - At most 256 recipient stanzas (`E006`).

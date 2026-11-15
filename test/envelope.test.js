@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import AdmZip from 'adm-zip';
-import { readPackage, bindEnvelopeSidecar } from '../lib/index.js';
+import { readPackage, bindEnvelopeSidecar, openSource } from '../lib/index.js';
 import { ageDecryptor } from '../lib/age.js';
 
 const spec = process.env.MOCA_SPEC_DIR ?? fileURLToPath(new URL('../../moca-spec/', import.meta.url));
@@ -132,4 +132,56 @@ test('a work-factor limit outside 1–22 is a host error', { skip }, async () =>
   for (const bad of [Number.NaN, 40, 0]) {
     await assert.rejects(readPackage(join(envelopes, 'passphrase.moca.enc'), { ...withKey(identityFile), limits: { maxScryptWorkFactor: bad } }), RangeError);
   }
+});
+
+test('an undefined work-factor limit is the default, and the limit is checked when the read starts', { skip }, async () => {
+  const r = await readPackage(join(envelopes, 'x25519.moca.enc'), { ...withKey(identityFile), limits: { maxScryptWorkFactor: undefined } });
+  assert.equal(r.valid, true);
+  // An invalid limit is refused even when no envelope is read.
+  await assert.rejects(readPackage(join(spec, 'examples/support-kb'), { limits: { maxScryptWorkFactor: 40 } }), RangeError);
+  await assert.rejects(bindEnvelopeSidecar(join(envelopes, 'x25519.moca.enc'), null, { limits: { maxScryptWorkFactor: 0 } }), RangeError);
+});
+
+test('null identities are E002, as in every Reader', { skip }, async () => {
+  const r = await readPackage(join(envelopes, 'x25519.moca.enc'), { decryptor: ageDecryptor, keyProvider: () => ({ identities: null }) });
+  assert.deepEqual(r.diagnostics.map((d) => d.code), ['E002_DECRYPTION_FAILED']);
+});
+
+test('an AbortError from a provider or decryptor is a failure, not the host cancelling', { skip }, async () => {
+  const abort = () => { throw new DOMException('timed out', 'AbortError'); };
+  const provider = await readPackage(join(envelopes, 'x25519.moca.enc'), { decryptor: ageDecryptor, keyProvider: abort });
+  assert.deepEqual(provider.diagnostics.map((d) => d.code), ['E001_ENCRYPTED_NO_KEY']);
+  const parse = await readPackage(join(envelopes, 'x25519.moca.enc'), { decryptor: { parseHeader: abort, decrypt: abort }, keyProvider: () => ({ identities: [] }) });
+  assert.deepEqual(parse.diagnostics.map((d) => d.code), ['E006_AGE_HEADER_INVALID']);
+  const later = await readPackage(join(envelopes, 'x25519.moca.enc'), { decryptor: { parseHeader: ageDecryptor.parseHeader, decrypt: abort }, keyProvider: () => ({ identities: [] }) });
+  assert.deepEqual(later.diagnostics.map((d) => d.code), ['E002_DECRYPTION_FAILED']);
+});
+
+test('the ciphertext and the plaintext are passed on in place, never copied (F4)', { skip }, async () => {
+  const seen = [];
+  const decryptor = {
+    parseHeader: (bytes, o) => { seen.push(['header', bytes]); return ageDecryptor.parseHeader(bytes, o); },
+    decrypt: async (bytes, header, key, o) => {
+      seen.push(['decrypt', bytes]);
+      const plain = await ageDecryptor.decrypt(bytes, header, key, o);
+      seen.push(['plain', plain]);
+      return plain;
+    },
+  };
+  const archive = readFileSync(join(envelopes, 'x25519.moca.enc'));
+  const r = await readPackage(archive, { decryptor, keyProvider: () => ({ identities: identitiesIn(identityFile) }) });
+  assert.equal(r.valid, true);
+  const [[, parsed], [, decrypted], [, plain]] = seen;
+  // The decryptor gets the same bytes it parsed, and they are a view into the envelope itself.
+  assert.equal(parsed, decrypted);
+  assert.equal(parsed.buffer, archive.buffer);
+  assert.ok(plain instanceof Uint8Array && plain.length > 0);
+  // Bytes given as a target are read in place: zero them, and the source sees zeros.
+  const zip = new AdmZip();
+  zip.addFile('a.txt', Buffer.from('hello'));
+  zip.getEntry('a.txt').header.method = 0;
+  const bytes = new Uint8Array(zip.toBuffer());
+  const source = openSource(bytes);
+  bytes.fill(0);
+  assert.throws(() => source.read('a.txt'));
 });
