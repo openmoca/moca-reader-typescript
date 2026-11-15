@@ -25,6 +25,11 @@ For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/
   invalid alternate) and carried in `node.media`. A time range on an alternate with no transcript is checked through its
   reference's transcript. `mapTime(record, from, to, t)` maps a moment between alternates.
 - `maxMembers` defaults to 4,096 (was 256).
+- A media time range may carry a `TextQuoteSelector` as its `refinedBy` (contract §7): it matches when the range does
+  and the quote is in the cues the range covers, white space collapsed. `evidence[].located` gives the cue-precise
+  span, the shortest of several occurrences, also through alternates.
+- A composer's reading order limits a member only when the composer's signers' `ids` cover the member's `id`, or the
+  host sets `allowUnsignedRelations` (contract §9).
 - Contract §3: a member met more than once in one read is resolved and read once, and shared; it counts once.
   New limit `maxMemberBytes` (1 GiB) on the bytes of all the members one read reads. A reading order is walked once,
   and bindings by composition keep only direct bindings and the links above them, so both take linear work. Package

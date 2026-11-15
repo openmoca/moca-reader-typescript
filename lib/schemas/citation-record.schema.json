@@ -370,6 +370,25 @@
           "matched": {
             "type": "boolean",
             "description": "true when the Reader checked the selector against the cited file inside the package and it matched; false when it did not match; absent when not checked. It says the quote is in the file, not that the claim is true."
+          },
+          "located": {
+            "type": "object",
+            "required": [
+              "start",
+              "end"
+            ],
+            "properties": {
+              "start": {
+                "type": "number",
+                "minimum": 0
+              },
+              "end": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "additionalProperties": false,
+            "description": "For a time range refined by a quote that matched: the seconds, on the cited source's timeline, from the start of the first cue the quote touches to the end of the last (spec/moca-reader-contract.md §7)."
           }
         }
       }

@@ -396,6 +396,18 @@
             },
             "conformsTo": {
               "type": "string"
+            },
+            "refinedBy": {
+              "type": "object",
+              "required": [
+                "type"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string"
+                }
+              },
+              "description": "A selector within this one (W3C Web Annotation). On a media time range, a TextQuoteSelector is checked against the cues the range covers (spec/moca-reader-contract.md §7)."
             }
           },
           "additionalProperties": false
