@@ -167,3 +167,28 @@ test('a repeat of a member id (M005) is not resolved (contract §3)', async () =
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test('a package and its members share one evidence budget (contract §3)', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'moca-budget-'));
+  try {
+    const quoted = (title) => `---\ntype: Note\ntitle: ${title}\nsources:\n  - { id: s, resource: ../sources/s.txt }\nmoca:\n  evidence:\n    - { source: s, selector: { type: TextQuoteSelector, exact: the tide turns } }\n---\n# ${title}\n`;
+    const files = (title) => ({ 'content/a.md': quoted(title), 'sources/s.txt': 'Here the tide turns at noon.' });
+    const memberDir = join(root, 'pkgs', 'member');
+    pkg(memberDir, { id: `${ID}/member`, title: 'Member' }, files('Member'));
+    const top = join(root, 'top');
+    pkg(top, { id: `${ID}/top`, title: 'Top', members: [await pinOf(memberDir)] }, files('Top'));
+    const resolveMember = directoryResolver([join(root, 'pkgs')]);
+    const matched = (r) => r.nodes[0].representations[0].evidenceChecks[0].matched;
+
+    const full = await readPackage(top, { resolveMember });
+    assert.equal(matched(full), true);
+    assert.equal(matched(full.members[0].result), true);
+
+    // One check in all: the composing package spends it, so its member's evidence is not checked.
+    const one = await readPackage(top, { resolveMember, limits: { maxEvidenceChecksPerPackage: 1 } });
+    assert.equal(matched(one), true);
+    assert.equal(matched(one.members[0].result), undefined);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});

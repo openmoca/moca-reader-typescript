@@ -46,6 +46,11 @@ For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/
   other Readers.
 - Frontmatter whose `sources` has two entries with the same `id` is `C002_FRONTMATTER_INVALID` (package spec
   §5.1), so the node is not read. Before, this Reader used the last entry.
+- Contract §3: the evidence budgets (`maxEvidenceChecksPerPackage`, `maxEvidenceBytesPerPackage`) cover the whole
+  read, so a package and its members share them. Each transcript's cues are parsed once per package, not once per
+  time range checked.
+- A number too large to be finite, such as `1e400` or a very long integer, is read as `.inf` is (package spec §5.1),
+  not as a string. No step spreads a long list into one call's arguments, so a transcript of many cues is checked.
 
 ### Changed (encrypted packages: hardening)
 
