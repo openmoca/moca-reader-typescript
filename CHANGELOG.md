@@ -25,6 +25,11 @@ For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/
   invalid alternate) and carried in `node.media`. A time range on an alternate with no transcript is checked through its
   reference's transcript. `mapTime(record, from, to, t)` maps a moment between alternates.
 - `maxMembers` defaults to 4,096 (was 256).
+- A refined quote is located in linear time (one Knuth-Morris-Pratt pass, constant-time spans); `located` runs from
+  the earliest start to the latest end of the touched cues; white space means the five ASCII characters.
+- An open-ended range on an alternate runs to the end of its stretch, and a range must end within the alternate's own
+  duration. A repeat of a member id (M005) is not resolved. `.inf`, `.nan` and numbers too large to be finite are
+  neither numbers nor strings.
 - A media time range may carry a `TextQuoteSelector` as its `refinedBy` (contract §7): it matches when the range does
   and the quote is in the cues the range covers, white space collapsed. `evidence[].located` gives the cue-precise
   span, the shortest of several occurrences, also through alternates.

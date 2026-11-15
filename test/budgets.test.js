@@ -133,3 +133,37 @@ test('bindings by composition stay linear in work and in state size (contract §
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test('a refined quote over a 4 MiB transcript is located in linear time (contract §3, §7)', async () => {
+  const { locateQuote } = await import('../lib/evidence-text.js');
+  // 4,096 cues of 1 KiB each: "a a a ...". Quadratic searches took minutes here.
+  const text = 'a '.repeat(512);
+  const cues = Array.from({ length: 4096 }, (_, i) => ({ start: i, end: i + 1, text }));
+  const range = { start: 0, end: 4096 };
+  for (const exact of ['a', 'a '.repeat(4096).trim()]) {
+    const started = performance.now();
+    const located = locateQuote(cues, range, { type: 'TextQuoteSelector', exact });
+    const ms = performance.now() - started;
+    assert.ok(located, `quote of ${exact.length} characters found`);
+    assert.ok(ms < 10_000, `${exact.length}-character quote located in ${Math.round(ms)} ms`);
+  }
+});
+
+test('a repeat of a member id (M005) is not resolved (contract §3)', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'moca-budget-'));
+  try {
+    const leaf = join(root, 'pkgs', 'leaf');
+    pkg(leaf, { id: `${ID}/leaf`, title: 'Leaf' }, { 'content/a.md': node('Leaf') });
+    const pin = await pinOf(leaf);
+    const fakes = Array.from({ length: 20 }, (_, i) => ({ ...pin, digest: `sha256:${String(i).padStart(64, '0')}` }));
+    const top = join(root, 'top');
+    pkg(top, { id: `${ID}/top`, title: 'Top', members: [pin, ...fakes] });
+    const resolver = directoryResolver([join(root, 'pkgs')]);
+    let calls = 0;
+    const r = await readPackage(top, { resolveMember: (m) => { calls += 1; return resolver(m); } });
+    assert.ok(r.diagnostics.some((d) => d.code === 'M005_DUPLICATE_MEMBER'));
+    assert.equal(calls, 1, 'only the first entry for the id is resolved');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
