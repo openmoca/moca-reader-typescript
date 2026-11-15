@@ -16,8 +16,8 @@ For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/
 - Time ranges must also end within the media: at or before the latest cue end, or the declared duration when later.
 - `datePublished` on the result and `package.datePublished` on records; the node's own `node.datePublished`.
 - Binding by composition: a composing package's structure binds its resolved members' records for `concepts`,
-  `scope` and `upTo`; `upTo` limits the members of a package whose reading order places it. Package states carry
-  `composition`, so store searches agree. With bindings loaded, the `concepts` filter is applied in the gate only.
+  `scope`, `upTo` and the structure operation `nodes()`; `upTo` limits the members of a package whose reading
+  order places it. Package states carry `composition`, so store searches agree. With bindings loaded, the `concepts` filter is applied in the gate only.
 - `isPartOf` is a core relation type; `R005_RELATION_TYPE_UNKNOWN` (info) for other undefined types.
 - An issued copy matches a member pin, and binds the publisher's sidecar, through its verified original digest. Items of
   changed files are replaced by whole-body chunks without vectors (`S009_SIDECAR_ITEMS_REPLACED`).
