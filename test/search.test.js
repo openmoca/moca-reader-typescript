@@ -259,3 +259,53 @@ test('a store is searched from its ingest-time records, with only the package st
   const old = await new Search({ packages: [s1], clock: now }, { backend: store }).search('customer records retention', { includeAll: true });
   assert.ok(old.every((r) => r.package.digest === v1));
 });
+
+// Contract §9.2, "Filters come before the limit".
+async function rankedFilter() {
+  const { directoryResolver } = await import('../lib/index.js');
+  const pkg = await readPackage(at('conformance/fixtures/ranked-filter/course'), { resolveMember: directoryResolver([at('conformance/fixtures/ranked-filter')]) });
+  return new Library({ allowUnsignedRelations: true }).add(pkg);
+}
+const RF = 'https://example.com/conformance/ranked-filter';
+
+test('filters come before the limit: records far down the ranking are found, whatever the backend', async () => {
+  const library = await rankedFilter();
+  const lexical = new LexicalBackend(library);
+  const everything = await new Search(library, { backend: lexical }).search('lantern', { limit: 1000 });
+  assert.equal(everything.findIndex((r) => r.package.id === `${RF}-step-1`), 240);
+  // The Reader's own backend, and a backend that ignores every filter but honours the limit: the same records.
+  const counted = [];
+  const limited = {
+    features: ['lexical'],
+    search: (q, { limit }) => { counted.push(limit); return lexical.search(q, { limit, filters: { digests: library.packages.map((p) => p.result.digest) } }); },
+  };
+  for (const backend of [lexical, limited]) {
+    const records = await new Search(library, { backend }).search('lantern', { limit: 6, upTo: `${RF}-step-1` });
+    assert.deepEqual(records.map((r) => r.node.path), ['a.md', 'b.md', 'c.md', 'd.md', 'e.md', 'f.md']);
+  }
+  // It asked again, doubling, until the limit was met: 18, 36, … 288.
+  assert.deepEqual(counted, [18, 36, 72, 144, 288]);
+});
+
+test('a host bound stops a search and reports S010_SEARCH_TRUNCATED', async () => {
+  const library = await rankedFilter();
+  const lexical = new LexicalBackend(library);
+  const limited = { features: ['lexical'], search: (q, { limit }) => lexical.search(q, { limit, filters: {} }) };
+  const search = new Search(library, { backend: limited, maxCandidates: 100 });
+  assert.deepEqual(await search.search('lantern', { limit: 6, upTo: `${RF}-step-1` }), []);
+  assert.deepEqual(search.diagnostics.map((d) => d.code), ['S010_SEARCH_TRUNCATED']);
+  // Not when the bound is enough, and not when the backend runs out first.
+  const roomy = new Search(library, { backend: limited, maxCandidates: 300 });
+  assert.equal((await roomy.search('lantern', { limit: 6, upTo: `${RF}-step-1` })).length, 6);
+  assert.deepEqual(roomy.diagnostics, []);
+  assert.throws(() => new Search(library, { backend: limited, maxCandidates: 0 }), RangeError);
+});
+
+test('a pushed-down filter never changes a score', async () => {
+  const library = await rankedFilter();
+  const all = await new Search(library, { backend: new LexicalBackend(library) }).search('lantern', { limit: 1000 });
+  const scoreOf = new Map(all.map((r) => [r.node.ref ?? `${r.package.id}#${r.node.path}`, r.score]));
+  const scoped = await new Search(library, { backend: new LexicalBackend(library) }).search('lantern', { limit: 6, scope: `${RF}#topic` });
+  assert.equal(scoped.length, 6);
+  for (const r of scoped) assert.equal(r.score, scoreOf.get(r.node.ref ?? `${r.package.id}#${r.node.path}`));
+});

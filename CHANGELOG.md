@@ -9,6 +9,19 @@ For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/
 [moca-spec#8](https://github.com/openmoca/moca-spec/issues/8) and
 [moca-spec#9](https://github.com/openmoca/moca-spec/issues/9)).
 
+### Changed (filters come before the limit: Reader contract §9.2)
+
+- `Search` returns the best `limit` records that pass the gate, however far down the unfiltered ranking they are. The
+  fixed cap of 200 candidates is gone: it asks the backend again, doubling the request, until `limit` records pass or
+  the backend returns fewer hits than asked. An egress hook runs again on each larger candidate list.
+- New option `maxCandidates` on `Search`: the host's bound on one call. A call it stops reports
+  `S010_SEARCH_TRUNCATED` (warning) in `search.diagnostics`. Unset by default.
+- `LexicalBackend` and `MemoryStoreBackend` score over every representation of the loaded packages, then apply the
+  filters, so a pushed-down filter never changes a score. The lexical and dense backends also apply the search's own
+  check for `upTo` and for concepts bound by composition, so such a search usually needs one request.
+- `HybridBackend` fuses each backend's whole ranking before filters, and keeps it for the rest of one search call;
+  `DenseBackend` embeds a query once however often it is asked again.
+
 ### Added (podcast and video series content: package spec §4.12, §5.6, §5.7, §7.1–§7.3; sidecar spec §5)
 
 - Media descriptions (`moca.media`): validated (`C005`, `C006`), exposed as `node.media`, never fetched. A time range
