@@ -9,6 +9,14 @@ For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/
 [moca-spec#8](https://github.com/openmoca/moca-spec/issues/8) and
 [moca-spec#9](https://github.com/openmoca/moca-spec/issues/9)).
 
+### Changed (alternative labels and ingress narrowing: package spec §5.6, Reader contract §9.2, §9.4)
+
+- `skos:altLabel` is read: concepts carry `altLabels` by language, in the order read, each once; the default
+  ontology-guided ingress matches a preferred or an alternative label, as written.
+- Concepts or a scope an ingress hook sets now narrow the search under composition and with backends that have no
+  pushdown: resolved hits are narrowed after the backend, before the egress hook and the gate, on every round.
+- A store search takes a structure source (`Search` takes `structure` in a store source): a library whose structure the hooks see and `scope` follows.
+
 ### Changed (filters come before the limit: Reader contract §9.2)
 
 - `Search` returns the best `limit` records that pass the gate, however far down the unfiltered ranking they are. The
