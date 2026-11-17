@@ -49,6 +49,12 @@
               "format": "date"
             }
           ]
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "The model's name and version, for content a model made (package spec section 4.14)."
         }
       },
       "additionalProperties": true
@@ -188,6 +194,7 @@
                 "minimum": 0
               },
               "offset": {
+                "description": "Seconds to add to a moment in this stretch to find it on the alternate; null: this stretch is not in the alternate (package spec section 5.7).",
                 "type": [
                   "number",
                   "null"

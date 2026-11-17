@@ -166,6 +166,7 @@
                       "minimum": 0
                     },
                     "offset": {
+                      "description": "Seconds to add to a moment in this stretch to find it on the alternate; null: this stretch is not in the alternate (package spec section 5.7).",
                       "type": [
                         "number",
                         "null"
@@ -243,6 +244,9 @@
                   "type": "string"
                 },
                 "at": {
+                  "type": "string"
+                },
+                "model": {
                   "type": "string"
                 }
               }
@@ -423,6 +427,74 @@
     },
     "score": {
       "type": "number"
+    },
+    "terms": {
+      "type": "object",
+      "description": "Resolved terms for the record's node, only in records from a search with a terms request (Reader contract section 15.4).",
+      "required": [
+        "authority"
+      ],
+      "properties": {
+        "authority": {
+          "enum": [
+            "packager",
+            "unverified"
+          ]
+        },
+        "ai": {
+          "type": "object",
+          "description": "Each permission of terms.ai, in the same shape (allowed.device, allowed.host, allowed.provider, allowed.training, allowed.machineTranslation, providerRequires, answerSources), as { value, decidedBy }.",
+          "properties": {
+            "allowed": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "required": [
+                  "value",
+                  "decidedBy"
+                ],
+                "properties": {
+                  "value": true,
+                  "decidedBy": {
+                    "enum": [
+                      "platform",
+                      "package",
+                      "node",
+                      "composite",
+                      "host"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "value",
+              "decidedBy"
+            ],
+            "properties": {
+              "value": true,
+              "decidedBy": {
+                "enum": [
+                  "platform",
+                  "package",
+                  "node",
+                  "composite",
+                  "host"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "rating": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
     },
     "retrieval": {
       "type": "object",

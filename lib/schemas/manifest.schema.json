@@ -249,6 +249,10 @@
         "type": "object"
       },
       "description": "Profile URI -> that profile's package-level data."
+    },
+    "terms": {
+      "type": "object",
+      "description": "The creator's terms (package spec section 4.14). Only its type is checked here: terms.schema.json checks the inside, and a problem there is a warning (U001), never M002."
     }
   },
   "additionalProperties": true,
