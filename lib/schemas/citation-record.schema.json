@@ -435,30 +435,30 @@
         },
         "ai": {
           "type": "object",
-          "description": "Each permission of terms.ai, in the same shape (where.device, where.host, where.provider, providerRequires, training, answerSources, machineTranslation), as { value, decidedBy }.",
+          "description": "Each permission of terms.ai, in the same shape (allowed.device, allowed.host, allowed.provider, allowed.training, allowed.machineTranslation, providerRequires, answerSources), as { value, decidedBy }.",
           "properties": {
-            "where": {
+            "allowed": {
               "type": "object",
               "additionalProperties": {
-              "type": "object",
-              "required": [
-                "value",
-                "decidedBy"
-              ],
-              "properties": {
-                "value": true,
-                "decidedBy": {
-                  "enum": [
-                    "platform",
-                    "package",
-                    "node",
-                    "composite",
-                    "host"
-                  ]
-                }
-              },
-              "additionalProperties": false
-            }
+                "type": "object",
+                "required": [
+                  "value",
+                  "decidedBy"
+                ],
+                "properties": {
+                  "value": true,
+                  "decidedBy": {
+                    "enum": [
+                      "platform",
+                      "package",
+                      "node",
+                      "composite",
+                      "host"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
             }
           },
           "additionalProperties": {

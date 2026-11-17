@@ -9,6 +9,17 @@ For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/
 [moca-spec#8](https://github.com/openmoca/moca-spec/issues/8) and
 [moca-spec#9](https://github.com/openmoca/moca-spec/issues/9)).
 
+### Added (the creator's terms: package spec §4.13, Reader contract §15)
+
+- `pkg.terms`: `{ declared, problems, authority }`. The manifest's `terms` exactly as written, its problems
+  (`U001_TERMS_INVALID`, `U003_TERMS_UNKNOWN_VALUE`, warnings, never `M002`), and the authority, `packager` or
+  `unverified`, from the package's signatures only. `U002_TERMS_LOOSENED` for a node value looser than the package's.
+- Permissions are booleans under `ai.allowed` (`device`, `host`, `provider`, `training`, `machineTranslation`); provider
+  conditions are `noTraining` and `noRetention`. Every level only makes the platform defaults stricter: in 0.7.0 no
+  package can loosen them, so `ai.allowed.training: true` has no effect.
+- `search(query, { terms })` applies the terms gate and adds each record's resolved `terms`; `termsLimits` are the
+  host's floors. Records removed are counted in `U004_TERMS_EXCLUDED` (info). Without a terms request nothing changes.
+
 ### Changed (alternative labels and ingress narrowing: package spec §5.6, Reader contract §9.2, §9.4)
 
 - `skos:altLabel` is read: concepts carry `altLabels` by language, in the order read, each once; the default

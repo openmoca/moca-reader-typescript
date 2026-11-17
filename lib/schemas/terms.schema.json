@@ -89,26 +89,29 @@
     "ai": {
       "type": "object",
       "properties": {
-        "where": {
+        "allowed": {
           "type": "object",
+          "description": "Permissions, each true or false; an absent key is not set.",
           "properties": {
             "device": {
-              "enum": [
-                "allow",
-                "deny"
-              ]
+              "type": "boolean",
+              "description": "Whether AI use may run on the person's own device."
             },
             "host": {
-              "enum": [
-                "allow",
-                "deny"
-              ]
+              "type": "boolean",
+              "description": "Whether AI use may run in the host's own service."
             },
             "provider": {
-              "enum": [
-                "allow",
-                "deny"
-              ]
+              "type": "boolean",
+              "description": "Whether AI use may run with a third party's model."
+            },
+            "training": {
+              "type": "boolean",
+              "description": "Whether the work may be used to train a model."
+            },
+            "machineTranslation": {
+              "type": "boolean",
+              "description": "Whether the work may be translated by a machine."
             }
           },
           "additionalProperties": false
@@ -117,29 +120,17 @@
           "type": "array",
           "items": {
             "enum": [
-              "no-training",
-              "no-retention"
+              "noTraining",
+              "noRetention"
             ]
           },
           "uniqueItems": true,
           "maxItems": 2
         },
-        "training": {
-          "enum": [
-            "allow",
-            "deny"
-          ]
-        },
         "answerSources": {
           "enum": [
             "work",
             "model"
-          ]
-        },
-        "machineTranslation": {
-          "enum": [
-            "allow",
-            "deny"
           ]
         }
       },
@@ -240,10 +231,7 @@
       ],
       "properties": {
         "allowed": {
-          "enum": [
-            "allow",
-            "deny"
-          ]
+          "type": "boolean"
         },
         "packagers": {
           "type": "array",
