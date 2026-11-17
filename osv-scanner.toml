@@ -1,0 +1,15 @@
+# OSV-Scanner exceptions (security baseline). Each one has a reason and an end date; when the date passes the finding fails
+# CI again. Review at each release.
+
+[[IgnoredVulns]]
+id = "GHSA-g3hv-75wg-m249"
+ignoreUntil = 2027-02-28
+reason = """minimatch 10 (denial of service from crafted glob patterns), fixed only in 11. It comes in through
+sigstore (@tufjs/models matches role paths from signed TUF metadata; cacache uses fixed patterns), which pin ^10, so it
+can't be raised without breaking them. No pattern comes from a package or a user. Drop when sigstore moves to 11."""
+
+[[IgnoredVulns]]
+id = "GHSA-3g3m-2fjr-6pw4"
+ignoreUntil = 2027-02-28
+reason = """glob 13, fixed only in 14. It comes in through sigstore's cacache (^13), which globs its own cache folder
+with fixed patterns; no pattern comes from a package or a user. Drop when cacache moves to 14."""

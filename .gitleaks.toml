@@ -1,0 +1,18 @@
+# gitleaks configuration (security baseline). The default rules, with allowlists for what is published on purpose.
+# Add to an allowlist only for a test key or a non-secret value, with a comment saying which.
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Test and fixture keys, published on purpose (SECURITY.md)"
+paths = [
+  # age's community test vectors (C2SP CCTV), whose keys are public.
+  '''^test/fixtures/cctv-age/''',
+  '''^test/age\.test\.js$''',
+]
+
+[[allowlists]]
+description = "SHA-256 file digests (model files, packages) are not secrets"
+targetRules = ["generic-api-key"]
+regexTarget = "secret"
+regexes = ['''^[a-f0-9]{64}$''']

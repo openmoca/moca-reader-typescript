@@ -1,0 +1,86 @@
+name: Fuzz
+
+# Coverage-guided fuzzing of the open-and-search path (fuzz/README.md). Short on pull requests; longer nightly,
+# with the corpus kept between nightly runs. A crash, timeout or out-of-memory fails the job and uploads the input.
+on:
+  pull_request:
+    paths: ['lib/**', 'fuzz/**', '.github/workflows/fuzz.yml']
+  schedule:
+    - cron: '30 2 * * *'
+  workflow_dispatch:
+    inputs:
+      seconds:
+        description: Seconds per target
+        default: '600'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Seeds and the package-files base come from the conformance corpus at a fixed ref (moca-spec CONTRIBUTING.md).
+  MOCA_SPEC_REF: 35380b8f89825c0b12312417639be08d4cb5ce9b  # 0.7.0 release candidate; v0.7.0 once tagged
+
+jobs:
+  fuzz:
+    name: Fuzz (${{ matrix.target }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [open, files]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
+        with:
+          path: moca-reader-typescript
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
+        with:
+          repository: ${{ github.repository_owner }}/moca-spec
+          ref: ${{ env.MOCA_SPEC_REF }}
+          path: moca-spec
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4.4.0
+        with:
+          node-version: 22
+      - run: npm ci
+        working-directory: moca-reader-typescript
+      - run: npm ci
+        working-directory: moca-reader-typescript/fuzz
+      - run: npm run seed
+        working-directory: moca-reader-typescript/fuzz
+      - name: Restore the nightly corpus
+        if: github.event_name != 'pull_request'
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830  # v4.3.0
+        with:
+          path: moca-reader-typescript/fuzz/kept-${{ matrix.target }}
+          key: fuzz-${{ matrix.target }}-${{ github.run_id }}
+          restore-keys: fuzz-${{ matrix.target }}-
+      - name: Fuzz
+        working-directory: moca-reader-typescript/fuzz
+        env:
+          SECONDS_PER_TARGET: ${{ github.event_name == 'pull_request' && '60' || github.event_name == 'schedule' && '1800' || inputs.seconds }}
+          TARGET: ${{ matrix.target }}
+        run: |
+          kept="kept-$TARGET"; mkdir -p "$kept"
+          if [ "$TARGET" = open ]; then seeds=corpus; script=open-search.fuzz.js; len=1048576; else seeds=corpus-files; script=package-files.fuzz.js; len=65536; fi
+          # New inputs go to the first corpus folder (kept), seeds are read from the second.
+          npx jazzer "$script" "$kept" "$seeds" -i /lib/ -- -rss_limit_mb=4096 -max_len=$len -max_total_time="$SECONDS_PER_TARGET"
+      - name: Save the nightly corpus
+        if: always() && github.event_name != 'pull_request'
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830  # v4.3.0
+        with:
+          path: moca-reader-typescript/fuzz/kept-${{ matrix.target }}
+          key: fuzz-${{ matrix.target }}-${{ github.run_id }}
+      - name: Upload failing inputs
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
+        with:
+          name: fuzz-failures-${{ matrix.target }}
+          path: |
+            moca-reader-typescript/fuzz/crash-*
+            moca-reader-typescript/fuzz/timeout-*
+            moca-reader-typescript/fuzz/oom-*
+          if-no-files-found: ignore
