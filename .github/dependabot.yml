@@ -5,7 +5,21 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # Wait a week after a release before proposing it, so a hijacked release is likely caught first.
+    cooldown:
+      default-days: 7
+  # The fuzz targets' own dependencies (Jazzer.js), kept apart from the Reader's.
+  - package-ecosystem: npm
+    directory: /fuzz
+    schedule:
+      interval: weekly
+    # Wait a week after a release before proposing it, so a hijacked release is likely caught first.
+    cooldown:
+      default-days: 7
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    # Wait a week after a release before proposing it, so a hijacked release is likely caught first.
+    cooldown:
+      default-days: 7
