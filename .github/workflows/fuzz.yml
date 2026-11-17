@@ -70,7 +70,7 @@ jobs:
           npx jazzer "$script" "$kept" "$seeds" -i /lib/ -- -rss_limit_mb=4096 -max_len=$len -max_total_time="$SECONDS_PER_TARGET"
       - name: Save the nightly corpus
         if: always() && github.event_name != 'pull_request'
-        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830  # v4.3.0
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
         with:
           path: moca-reader-typescript/fuzz/kept-${{ matrix.target }}
           key: fuzz-${{ matrix.target }}-${{ github.run_id }}
