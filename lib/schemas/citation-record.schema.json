@@ -166,6 +166,7 @@
                       "minimum": 0
                     },
                     "offset": {
+                      "description": "Seconds to add to a moment in this stretch to find it on the alternate; null: this stretch is not in the alternate (package spec section 5.7).",
                       "type": [
                         "number",
                         "null"
