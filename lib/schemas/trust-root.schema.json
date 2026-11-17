@@ -52,6 +52,32 @@
             "uniqueItems": true,
             "description": "Package ids this entry may speak for: in supersedes and conflictsWith relations, and, for the issued-copy role, whose copies it may issue. Exact ids, or prefixes ending in /, : or # (package spec section 7.2). Required with the issued-copy role."
           },
+          "channel": {
+            "type": "object",
+            "required": [
+              "kind",
+              "value"
+            ],
+            "properties": {
+              "kind": {
+                "enum": [
+                  "feed",
+                  "web"
+                ]
+              },
+              "value": {
+                "type": "string",
+                "pattern": "^https://",
+                "maxLength": 2048
+              },
+              "fetchedAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "additionalProperties": false,
+            "description": "The rights holder's channel the host discovered this entry from (attestations section 6). It gives authority over terms only for packages whose rights.rightsHolder.id equals value."
+          },
           "reviewers": {
             "type": "array",
             "items": {
@@ -131,6 +157,32 @@
                 },
                 "uniqueItems": true,
                 "description": "Package ids this entry may speak for: in supersedes and conflictsWith relations, and, for the issued-copy role, whose copies it may issue. Exact ids, or prefixes ending in /, : or # (package spec section 7.2). Required with the issued-copy role."
+              },
+              "channel": {
+                "type": "object",
+                "required": [
+                  "kind",
+                  "value"
+                ],
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "feed",
+                      "web"
+                    ]
+                  },
+                  "value": {
+                    "type": "string",
+                    "pattern": "^https://",
+                    "maxLength": 2048
+                  },
+                  "fetchedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                },
+                "additionalProperties": false,
+                "description": "The rights holder's channel the host discovered this entry from (attestations section 6). It gives authority over terms only for packages whose rights.rightsHolder.id equals value."
               },
               "reviewers": {
                 "type": "array",

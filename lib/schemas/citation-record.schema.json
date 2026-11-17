@@ -237,6 +237,9 @@
                 },
                 "at": {
                   "type": "string"
+                },
+                "model": {
+                  "type": "string"
                 }
               }
             },
@@ -416,6 +419,78 @@
     },
     "score": {
       "type": "number"
+    },
+    "terms": {
+      "type": "object",
+      "description": "Resolved terms for the record's node, only in records from a search with a terms request (Reader contract section 15.4).",
+      "required": [
+        "authority"
+      ],
+      "properties": {
+        "authority": {
+          "enum": [
+            "owner",
+            "packager-named-by-owner",
+            "packager",
+            "unverified"
+          ]
+        },
+        "ai": {
+          "type": "object",
+          "description": "Each permission of terms.ai, in the same shape (where.device, where.host, where.provider, providerRequires, training, answerSources, machineTranslation), as { value, decidedBy }.",
+          "properties": {
+            "where": {
+              "type": "object",
+              "additionalProperties": {
+              "type": "object",
+              "required": [
+                "value",
+                "decidedBy"
+              ],
+              "properties": {
+                "value": true,
+                "decidedBy": {
+                  "enum": [
+                    "platform",
+                    "publisher",
+                    "package",
+                    "node",
+                    "composite",
+                    "host"
+                  ]
+                }
+              },
+              "additionalProperties": false
+            }
+            }
+          },
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "value",
+              "decidedBy"
+            ],
+            "properties": {
+              "value": true,
+              "decidedBy": {
+                "enum": [
+                  "platform",
+                  "publisher",
+                  "package",
+                  "node",
+                  "composite",
+                  "host"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "rating": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
     },
     "retrieval": {
       "type": "object",

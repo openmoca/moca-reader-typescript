@@ -1,0 +1,259 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/moca/schemas/v1/terms.schema.json",
+  "title": "MOCA terms",
+  "description": "The manifest's terms: the creator's terms for AI use, rating and rights (package spec section 4.13). A Reader checks terms against this schema and reports each problem as U001 (warning), never M002; the package stays valid.",
+  "type": "object",
+  "properties": {
+    "ai": {
+      "$ref": "#/$defs/ai"
+    },
+    "rating": {
+      "$ref": "#/$defs/rating"
+    },
+    "rights": {
+      "type": "object",
+      "properties": {
+        "rightsHolder": {
+          "type": "object",
+          "required": [
+            "id"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "maxLength": 2048,
+              "pattern": "^https://[^/?#]+(/[^?#]*)?$",
+              "description": "An https origin, or the https URL of a feed: the rights holder's channel."
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+            }
+          },
+          "additionalProperties": false
+        },
+        "basis": {
+          "enum": [
+            "own",
+            "consent",
+            "license"
+          ]
+        },
+        "contact": {
+          "type": "string",
+          "maxLength": 2048,
+          "pattern": "^(mailto:|https://)"
+        },
+        "repackage": {
+          "$ref": "#/$defs/repackage"
+        }
+      },
+      "additionalProperties": false
+    },
+    "nodes": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "required": [
+          "paths"
+        ],
+        "properties": {
+          "paths": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 64,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^content/(?!\\.)([^/]+/)*(?!\\.)[^/]*$",
+              "description": "A node path, or a directory prefix ending in /, under content/; no segment starts with a dot."
+            }
+          },
+          "ai": {
+            "$ref": "#/$defs/ai"
+          },
+          "rating": {
+            "$ref": "#/$defs/rating"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "ai": {
+      "type": "object",
+      "properties": {
+        "where": {
+          "type": "object",
+          "properties": {
+            "device": {
+              "enum": [
+                "allow",
+                "deny"
+              ]
+            },
+            "host": {
+              "enum": [
+                "allow",
+                "deny"
+              ]
+            },
+            "provider": {
+              "enum": [
+                "allow",
+                "deny"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "providerRequires": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "no-training",
+              "no-retention"
+            ]
+          },
+          "uniqueItems": true,
+          "maxItems": 2
+        },
+        "training": {
+          "enum": [
+            "allow",
+            "deny"
+          ]
+        },
+        "answerSources": {
+          "enum": [
+            "work",
+            "model"
+          ]
+        },
+        "machineTranslation": {
+          "enum": [
+            "allow",
+            "deny"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "rating": {
+      "type": "object",
+      "properties": {
+        "explicit": {
+          "type": "boolean"
+        },
+        "contentRating": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "required": [
+              "scheme",
+              "value"
+            ],
+            "properties": {
+              "scheme": {
+                "type": "string",
+                "pattern": "^[a-z0-9][a-z0-9-]{0,31}$"
+              },
+              "value": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "typicalAgeRange": {
+          "type": "string",
+          "pattern": "^[0-9]{1,2}-([0-9]{1,2})?$",
+          "description": "The lower bound must not be above the upper; Readers check this (U001)."
+        },
+        "declaredBy": {
+          "enum": [
+            "signer",
+            "feed"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "signer": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "publicKey"
+          ],
+          "properties": {
+            "publicKey": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "sigstore"
+          ],
+          "properties": {
+            "sigstore": {
+              "type": "object",
+              "required": [
+                "issuer",
+                "subject"
+              ],
+              "properties": {
+                "issuer": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "subject": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "repackage": {
+      "type": "object",
+      "required": [
+        "allowed"
+      ],
+      "properties": {
+        "allowed": {
+          "enum": [
+            "allow",
+            "deny"
+          ]
+        },
+        "packagers": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "$ref": "#/$defs/signer"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

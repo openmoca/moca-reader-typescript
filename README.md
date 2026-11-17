@@ -65,6 +65,7 @@ pkg.apps;           // ['https://apps.example.com/legal-review', 'legal']: where
 pkg.readingOrder;   // 'https://example.com/moca/course#path': the ordered collection the package is read in, when it resolves
 pkg.datePublished;  // '2026-01-05': when the package was first published, as written; informative only
 pkg.issuedCopy;     // { originalDigest, issuers, changedFiles } for an issued copy bound to its publisher's package
+pkg.terms;          // { declared?, problems, authority }: the creator's terms as written, and who stated them; labels, not locks
 pkg.diagnostics;    // [{ code, severity, message, file?, line? }]
 
 const library = new Library().add(pkg);
@@ -101,9 +102,9 @@ memory; the Reader never writes them to a file.
 
 | Export | Purpose |
 | --- | --- |
-| `readPackage(target, options)` | Read and check a package. `target`: path, `.moca`/`.zip` path, archive bytes (a `Uint8Array`, read in place: do not change it during the read), or `{ list(), read(path) }`. Options: `trustRoot`, `resolveMember`, `strict`, `limits`, `online`, `allowOfflineFallback`, `tufCachePath`. |
+| `readPackage(target, options)` | Read and check a package. `target`: path, `.moca`/`.zip` path, archive bytes (a `Uint8Array`, read in place: do not change it during the read), or `{ list(), read(path) }`. Options: `trustRoot`, `resolveMember`, `strict`, `limits`, `online`, `allowOfflineFallback`, `tufCachePath`, `publisherStatements` (publisher terms statements the host holds, [attestations §4a](https://github.com/openmoca/moca-spec/blob/main/spec/moca-attestations.md#4a-publisher-terms-statements)). |
 | `Library` | Holds verified packages (and their sidecar `chunks` and `index`); `citations()`, `get()`, and `search()` as a synchronous lexical shortcut; applies relations. Takes a `clock` for testing. |
-| `Search` | One entry point over a backend: `search(query, { limit, includeAll, locale, concepts, scope, upTo })`, with optional `hooks: { ingress, egress }`; `search.diagnostics` holds the latest call's findings, such as `S008`. The gate always runs last ([Reader contract §9](https://github.com/openmoca/moca-spec/blob/main/spec/moca-reader-contract.md#9-search)). `new Search({ digests, clock }, { backend })` searches a store from its ingest-time records. |
+| `Search` | One entry point over a backend: `search(query, { limit, includeAll, locale, concepts, scope, upTo, terms })`, with optional `hooks: { ingress, egress }` and `termsLimits` (the host's own `ai` values, floors only); a `terms` request applies the terms gate and adds each record's resolved `terms` ([Reader contract §15](https://github.com/openmoca/moca-spec/blob/main/spec/moca-reader-contract.md#15-creators-terms)); `search.diagnostics` holds the latest call's findings, such as `S008`. The gate always runs last ([Reader contract §9](https://github.com/openmoca/moca-spec/blob/main/spec/moca-reader-contract.md#9-search)). `new Search({ digests, clock }, { backend })` searches a store from its ingest-time records. |
 | `LexicalBackend`, `DenseBackend`, `MemoryStoreBackend` | Backends: BM25 over package text or sidecar chunks; sidecar vectors with a host embedder (`S006` on a model mismatch, `S007` for a package without vectors); a reference in-memory store. |
 | `mapTime(record, from, to, t)` | The same moment on another media description of the record's node: switch between the audio and video versions of an episode ([package spec §5.7](https://github.com/openmoca/moca-spec/blob/main/spec/moca-package-spec.md#57-media)). `null` when it is not there. |
 | `selectorMatches(selector, text)` | The evidence check behind `evidence[].matched` and `C011`. |
