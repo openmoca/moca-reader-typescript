@@ -69,7 +69,21 @@
       "description": "SPDX license expression."
     },
     "publisher": {
-      "type": "string"
+      "$ref": "#/$defs/publisher"
+    },
+    "url": {
+      "type": "string",
+      "pattern": "^https?://[^\\s]+(?![\\s\\S])",
+      "maxLength": 2048,
+      "description": "The work's own web page (spec section 4.13). Never fetched by a Reader."
+    },
+    "contributors": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "$ref": "#/$defs/contributor"
+      },
+      "description": "People and organisations credited for the whole package, with MARC relator roles (spec section 4.13)."
     },
     "distribution": {
       "enum": ["open", "encrypted-only", "service-only"],
@@ -238,7 +252,7 @@
     },
     "terms": {
       "type": "object",
-      "description": "The creator's terms (package spec section 4.13). Only its type is checked here: terms.schema.json checks the inside, and a problem there is a warning (U001), never M002."
+      "description": "The creator's terms (package spec section 4.14). Only its type is checked here: terms.schema.json checks the inside, and a problem there is a warning (U001), never M002."
     }
   },
   "additionalProperties": true,
@@ -378,6 +392,117 @@
         }
       },
       "additionalProperties": false
+    },
+    "creditImage": {
+      "type": "object",
+      "required": [
+        "src",
+        "type"
+      ],
+      "properties": {
+        "src": {
+          "type": "string",
+          "pattern": "^media(?:/[^/\\\\]+)+(?![\\s\\S])",
+          "not": {
+            "pattern": "(?:^|/)\\.\\.?(?:/|$)"
+          },
+          "description": "A package path to a regular file under media/. Never a URL."
+        },
+        "type": {
+          "enum": [
+            "image/png",
+            "image/jpeg",
+            "image/webp"
+          ]
+        },
+        "alt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 250
+        }
+      },
+      "additionalProperties": false,
+      "description": "A picture of a publisher or contributor: a package file, checked like a manifest image (spec section 4.6, 4.13)."
+    },
+    "sameAs": {
+      "type": "array",
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^https://[^\\s]+(?![\\s\\S])",
+        "maxLength": 2048
+      },
+      "description": "https: URIs of the same party elsewhere, such as ISNI, ORCID or Wikidata (spec section 4.13)."
+    },
+    "publisher": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "url": {
+          "type": "string",
+          "pattern": "^https?://[^\\s]+(?![\\s\\S])",
+          "maxLength": 2048
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "image": {
+          "$ref": "#/$defs/creditImage"
+        },
+        "sameAs": {
+          "$ref": "#/$defs/sameAs"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Who publishes the package (spec section 4.13). The signer's claim, not proof."
+    },
+    "contributor": {
+      "type": "object",
+      "required": [
+        "name",
+        "roles"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "roles": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z]{3}(?![\\s\\S])"
+          },
+          "description": "MARC relator codes, such as aut, nrt or hst."
+        },
+        "url": {
+          "type": "string",
+          "pattern": "^https?://[^\\s]+(?![\\s\\S])",
+          "maxLength": 2048
+        },
+        "image": {
+          "$ref": "#/$defs/creditImage"
+        },
+        "sameAs": {
+          "$ref": "#/$defs/sameAs"
+        }
+      },
+      "additionalProperties": false,
+      "description": "A person or organisation credited for the work, with their roles (spec section 4.13). The signer's claim, not proof."
     }
   }
 }

@@ -179,6 +179,13 @@
             },
             "additionalProperties": false
           }
+        },
+        "contributors": {
+          "type": "array",
+          "description": "The node's own moca.contributors, as written, when they match the node schema (Reader contract section 7). Images that fail their check are left out.",
+          "items": {
+            "type": "object"
+          }
         }
       },
       "additionalProperties": false
@@ -402,7 +409,7 @@
       "description": "Absolute concept IRIs the node is bound to, from the package structure (moca.concepts).",
       "items": {
         "type": "string",
-        "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\t\\n\\v\\f\\r \u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]+(?![\\s\\S])"
+        "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[^\\t\\n\\v\\f\\r    -     　﻿]+(?![\\s\\S])"
       }
     },
     "audience": {

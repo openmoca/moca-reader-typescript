@@ -64,6 +64,8 @@ pkg.tags;           // ['refunds', ...]: without repeats
 pkg.apps;           // ['https://apps.example.com/legal-review', 'legal']: where the publisher suggests opening it; advice only
 pkg.readingOrder;   // 'https://example.com/moca/course#path': the ordered collection the package is read in, when it resolves
 pkg.datePublished;  // '2026-01-05': when the package was first published, as written; informative only
+pkg.publisher;      // { name, url?, description?, image?, sameAs? }: who publishes it, as written; the signer's claim
+pkg.contributors;   // [{ name, roles, url?, image?, sameAs? }]: credits with MARC relator roles; labels, not proof
 pkg.issuedCopy;     // { originalDigest, issuers, changedFiles } for an issued copy bound to its publisher's package
 pkg.terms;          // { declared?, problems, authority }: the creator's terms as written, and who stated them; labels, not locks
 pkg.diagnostics;    // [{ code, severity, message, file?, line? }]

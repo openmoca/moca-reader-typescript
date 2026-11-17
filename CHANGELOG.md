@@ -9,7 +9,14 @@ For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/
 [moca-spec#8](https://github.com/openmoca/moca-spec/issues/8) and
 [moca-spec#9](https://github.com/openmoca/moca-spec/issues/9)).
 
-### Added (the creator's terms: package spec §4.13, Reader contract §15)
+### Added (credits: package spec §4.13)
+
+- The package result carries `publisher` (an object), `url` and `contributors`, as written, when the package is
+  valid; citation records carry `node.contributors` from a node's `moca.contributors`. A credit's image is checked
+  as a manifest image (`M010`) and left out when it fails. Credits are labels, not proof. Vendored manifest, node
+  and citation-record schemas updated; `publisher` as a string now fails the schema (`M002`).
+
+### Added (the creator's terms: package spec §4.14, Reader contract §15)
 
 - `pkg.terms`: `{ declared, problems, authority }`. The manifest's `terms` exactly as written, its problems
   (`U001_TERMS_INVALID`, `U003_TERMS_UNKNOWN_VALUE`, warnings, never `M002`), and the authority, `packager` or

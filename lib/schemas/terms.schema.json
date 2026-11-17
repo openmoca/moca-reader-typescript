@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://w3id.org/moca/schemas/v1/terms.schema.json",
   "title": "MOCA terms",
-  "description": "The manifest's terms: the creator's terms for AI use, rating and rights (package spec section 4.13). A Reader checks terms against this schema and reports each problem as U001 (warning), never M002; the package stays valid.",
+  "description": "The manifest's terms: the creator's terms for AI use, rating and rights (package spec section 4.14). A Reader checks terms against this schema and reports each problem as U001 (warning), never M002; the package stays valid.",
   "type": "object",
   "properties": {
     "ai": {
