@@ -2,7 +2,7 @@
 // <corpus dir>: every fixture archive as it is, and every fixture folder zipped (open-search.fuzz.js).
 // <corpus dir>-files: each file of the `reading-order` fixture, with a last byte choosing which file it replaces
 // (package-files.fuzz.js). Usage: node seed.mjs <moca-spec dir> <corpus dir>
-import { readdirSync, statSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { createHash } from 'node:crypto';
 import AdmZip from 'adm-zip';
@@ -17,16 +17,24 @@ const save = (bytes, dir = out) => {
   writeFileSync(join(dir, createHash('sha256').update(bytes).digest('hex').slice(0, 16)), bytes);
   n++;
 };
-const walk = (dir, f) => { for (const e of readdirSync(dir)) { const p = join(dir, e); statSync(p).isDirectory() ? walk(p, f) : f(p); } };
+// The entries' own types, not a separate stat, so nothing can change between the check and the read.
+const walk = (dir, f) => {
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    const p = join(dir, e.name);
+    if (e.isDirectory()) walk(p, f);
+    else if (e.isFile()) f(p);
+  }
+};
 
 const fixtures = join(spec, 'conformance', 'fixtures');
-for (const e of readdirSync(fixtures)) {
+for (const entry of readdirSync(fixtures, { withFileTypes: true })) {
+  const e = entry.name;
   const p = join(fixtures, e);
-  if (statSync(p).isDirectory()) {
+  if (entry.isDirectory()) {
     const zip = new AdmZip();
     walk(p, (f) => zip.addFile(relative(p, f).split('\\').join('/'), readFileSync(f)));
     save(zip.toBuffer());
-  } else if (/\.(zip|moca)$/.test(e)) save(readFileSync(p));
+  } else if (entry.isFile() && /\.(zip|moca)$/.test(e)) save(readFileSync(p));
 }
 const dist = join(spec, 'dist', 'examples');
 try { for (const e of readdirSync(dist)) if (e.endsWith('.moca')) save(readFileSync(join(dist, e))); } catch { /* not built */ }

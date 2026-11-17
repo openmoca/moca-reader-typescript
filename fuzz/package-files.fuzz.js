@@ -3,7 +3,7 @@
 // archive's checksums. The base is moca-spec's `reading-order` fixture (MOCA_SPEC_DIR; by default, moca-spec
 // beside this repository). The rule is the same as open-search.fuzz.js: never throw anything but a TargetError,
 // and a package that reads must search without throwing.
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { FuzzedDataProvider } from '@jazzer.js/core';
@@ -13,10 +13,11 @@ const spec = process.env.MOCA_SPEC_DIR ?? fileURLToPath(new URL('../../moca-spec
 const base = join(resolve(spec), 'conformance', 'fixtures', 'reading-order');
 const files = new Map();
 const walk = (dir) => {
-  for (const e of readdirSync(dir)) {
-    const p = join(dir, e);
-    if (statSync(p).isDirectory()) walk(p);
-    else files.set(relative(base, p).split('\\').join('/'), readFileSync(p));
+  // The entries' own types, not a separate stat, so nothing can change between the check and the read.
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    const p = join(dir, e.name);
+    if (e.isDirectory()) walk(p);
+    else if (e.isFile()) files.set(relative(base, p).split('\\').join('/'), readFileSync(p));
   }
 };
 walk(base);
