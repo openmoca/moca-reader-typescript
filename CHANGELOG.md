@@ -9,6 +9,13 @@ For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/
 [moca-spec#8](https://github.com/openmoca/moca-spec/issues/8) and
 [moca-spec#9](https://github.com/openmoca/moca-spec/issues/9)).
 
+### Added (credits: package spec §4.13)
+
+- The package result carries `publisher` (an object), `url` and `contributors`, as written, when the package is
+  valid; citation records carry `node.contributors` from a node's `moca.contributors`. A credit's image is checked
+  as a manifest image (`M010`) and left out when it fails. Credits are labels, not proof. Vendored manifest, node
+  and citation-record schemas updated; `publisher` as a string now fails the schema (`M002`).
+
 ### Changed (alternative labels and ingress narrowing: package spec §5.6, Reader contract §9.2, §9.4)
 
 - `skos:altLabel` is read: concepts carry `altLabels` by language, in the order read, each once; the default
