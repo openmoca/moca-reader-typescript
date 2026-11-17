@@ -429,8 +429,6 @@
       "properties": {
         "authority": {
           "enum": [
-            "owner",
-            "packager-named-by-owner",
             "packager",
             "unverified"
           ]
@@ -452,7 +450,6 @@
                 "decidedBy": {
                   "enum": [
                     "platform",
-                    "publisher",
                     "package",
                     "node",
                     "composite",
@@ -475,7 +472,6 @@
               "decidedBy": {
                 "enum": [
                   "platform",
-                  "publisher",
                   "package",
                   "node",
                   "composite",
