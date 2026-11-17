@@ -114,7 +114,10 @@ jobs:
       - run: npm ci
         working-directory: moca-spec
       - name: Example package from the moca-spec checkout
-        run: node scripts/pack-examples.mjs --out "$RUNNER_TEMP/assets"
+        run: |
+          mkdir -p "$RUNNER_TEMP/assets"
+          node node_modules/@openmoca/moca-lint/bin/moca-lint.js pack examples/support-kb -o "$RUNNER_TEMP/assets/support-kb.moca" --trust-root fixtures/signing-keys/trust-root.json
+          cp fixtures/signing-keys/trust-root.json "$RUNNER_TEMP/assets/example-trust-root.json"
         working-directory: moca-spec
       - run: npm pack --pack-destination "$RUNNER_TEMP/assets"
         working-directory: moca-reader-typescript
