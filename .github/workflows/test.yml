@@ -109,12 +109,13 @@ jobs:
         working-directory: moca-reader-typescript
       - run: npm ci
         working-directory: moca-tools
-      # support-kb and the example trust root are unchanged since v0.6.0: its release files stand in for v0.7.0's
-      # until v0.7.0 is released.
-      - name: Example package from the moca-spec release
-        env:
-          GH_TOKEN: ${{ secrets.MOCA_REPOS_TOKEN || github.token }}
-        run: gh release download v0.6.0 -R ${{ github.repository_owner }}/moca-spec -p support-kb.moca -p example-trust-root.json -D "$RUNNER_TEMP/assets"
+      # Until v0.7.0 is released, support-kb and the example trust root are packed from the moca-spec checkout:
+      # v0.6.0's support-kb has a string publisher, which 0.7.0 refuses (M002).
+      - run: npm ci
+        working-directory: moca-spec
+      - name: Example package from the moca-spec checkout
+        run: node scripts/pack-examples.mjs --out "$RUNNER_TEMP/assets"
+        working-directory: moca-spec
       - run: npm pack --pack-destination "$RUNNER_TEMP/assets"
         working-directory: moca-reader-typescript
       # Until @openmoca/moca-core is on npm and the repositories are public: install the Reader packed
