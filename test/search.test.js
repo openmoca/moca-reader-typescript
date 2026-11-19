@@ -309,3 +309,13 @@ test('a pushed-down filter never changes a score', async () => {
   assert.equal(scoped.length, 6);
   for (const r of scoped) assert.equal(r.score, scoreOf.get(r.node.ref ?? `${r.package.id}#${r.node.path}`));
 });
+
+test('two chunks of one node that share a start but not an end are both kept (contract §7, §9.2)', async () => {
+  const library = await policyLibrary();
+  const current = library.packages.map((p) => p.result).find((r) => r.manifest.version === '2.0.0');
+  const [whole] = await new Search(library, { backend: new LexicalBackend(library) }).search('customer records retention', { limit: 1 });
+  const start = whole.span.start;
+  const hit = (end, score) => ({ digest: current.digest, node: `${current.manifest.id}#${whole.node.path}`, path: whole.node.path, score, span: { start, end } });
+  const results = await new Search(library, { backend: rawBackend([hit(start + 10, 2), hit(start + 20, 1)]) }).search('anything');
+  assert.deepEqual(results.map((r) => r.span.end), [start + 10, start + 20]);
+});

@@ -9,6 +9,14 @@ For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/
 [moca-spec#8](https://github.com/openmoca/moca-spec/issues/8) and
 [moca-spec#9](https://github.com/openmoca/moca-spec/issues/9)).
 
+### Fixed (found by an independent review)
+
+- Contract §15.3 step 3: a composing package's stricter `ai` and export terms now apply to its members' records when
+  its signers speak for the member (as for `upTo`), or the host allows unsigned packages to. Before, a member's own
+  terms were used alone.
+- Contract §7, §9.2: search de-duplication now keys on the whole span (start and end), so two chunks of one node that
+  share a start are both kept.
+
 ### Added (rights and dates: package spec §4.12, §4.14; Reader contract §7, §15.3)
 
 - The package result carries `datePackaged`, as written, when the manifest passes its schema; citation records carry
