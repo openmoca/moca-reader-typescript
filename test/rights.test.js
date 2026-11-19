@@ -32,3 +32,16 @@ test('a record from a gated search carries terms.rights.export', () => {
   const t = recordTerms('unverified', { 'allowed.device': { value: true, decidedBy: 'platform' } }, null, { value: false, decidedBy: 'package' });
   assert.deepEqual(t.rights, { export: { value: false, decidedBy: 'package' } });
 });
+
+test('a composing package that speaks for the member makes its terms stricter, never looser (contract §15.3 step 3)', async () => {
+  const { resolveAi } = await import('../lib/terms.js');
+  const member = { terms: { ai: { allowed: { host: true } }, rights: { export: { allowed: false } } }, authority: 'unverified' };
+  const tighter = { ai: { allowed: { host: false }, providerRequires: ['noRetention'] }, rights: { export: { allowed: false } } };
+  const looser = { ai: { allowed: { host: true } }, rights: { export: { allowed: true } } };
+  const ai = resolveAi(member, 'lesson.md', undefined, [tighter]);
+  assert.deepEqual(ai['allowed.host'], { value: false, decidedBy: 'composite' });
+  assert.deepEqual(ai.providerRequires, { value: ['noRetention'], decidedBy: 'composite' });
+  assert.deepEqual(resolveExport(member, [looser]), { value: false, decidedBy: 'package' });
+  assert.deepEqual(resolveExport({ terms: {} }, [tighter]), { value: false, decidedBy: 'composite' });
+  assert.deepEqual(resolveAi(member, 'lesson.md', undefined, [looser])['allowed.host'].value, true);
+});
