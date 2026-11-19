@@ -9,6 +9,18 @@ For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/
 [moca-spec#8](https://github.com/openmoca/moca-spec/issues/8) and
 [moca-spec#9](https://github.com/openmoca/moca-spec/issues/9)).
 
+### Added (rights and dates: package spec §4.12, §4.14; Reader contract §7, §15.3)
+
+- The package result carries `datePackaged`, as written, when the manifest passes its schema; citation records carry
+  `package.datePackaged`.
+- Terms gain `rights.export.allowed`, `rights.copyright`, `rights.notice` and `rights` (`license`, `copyright`) in
+  `terms.nodes` entries, checked with the rest of `terms` (a copyright year range out of order is `U001`).
+- Citation records carry `node.license` and `node.copyright`: the node's `terms.nodes` entry first, else the
+  manifest's `license` and `terms.rights.copyright`; a value with a terms problem is skipped.
+- Records from a search with a terms request carry `terms.rights.export`, resolved from the package (platform
+  default `true`; a malformed value counts as `false`). Export removes nothing from a search.
+- Vendored manifest, terms and citation-record schemas updated.
+
 ### Added (credits: package spec §4.13)
 
 - The package result carries `publisher` (an object), `url` and `contributors`, as written, when the package is
