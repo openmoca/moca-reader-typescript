@@ -42,6 +42,10 @@
           "type": "string",
           "description": "The manifest's datePublished, as written (spec/moca-package-spec.md §4.12)."
         },
+        "datePackaged": {
+          "type": "string",
+          "description": "The manifest's datePackaged, as written (spec/moca-package-spec.md §4.12)."
+        },
         "issuedCopy": {
           "type": "object",
           "required": [
@@ -186,6 +190,14 @@
           "items": {
             "type": "object"
           }
+        },
+        "license": {
+          "type": "string",
+          "description": "The node's licence: its terms.nodes entry's rights.license, else the manifest's license (Reader contract §7)."
+        },
+        "copyright": {
+          "type": "object",
+          "description": "The node's copyright statement: its terms.nodes entry's rights.copyright, else terms.rights.copyright, as written (Reader contract §7)."
         }
       },
       "additionalProperties": false
@@ -492,6 +504,31 @@
         },
         "rating": {
           "type": "object"
+        },
+        "rights": {
+          "type": "object",
+          "description": "Resolved rights permissions: export, as { value, decidedBy } (Reader contract section 15.3).",
+          "properties": {
+            "export": {
+              "type": "object",
+              "required": [
+                "value",
+                "decidedBy"
+              ],
+              "properties": {
+                "value": true,
+                "decidedBy": {
+                  "enum": [
+                    "platform",
+                    "package",
+                    "composite"
+                  ]
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

@@ -49,6 +49,26 @@
         },
         "repackage": {
           "$ref": "#/$defs/repackage"
+        },
+        "export": {
+          "type": "object",
+          "description": "Whether an app may let people copy, save or export the work's text outside it (package spec section 4.14).",
+          "properties": {
+            "allowed": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "copyright": {
+          "$ref": "#/$defs/copyright"
+        },
+        "notice": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "pattern": "^[^\\u0000-\\u0008\\u000b-\\u001f\\u007f]+$",
+          "description": "A short message from the creator, in their own words, for display only (package spec section 4.14)."
         }
       },
       "additionalProperties": false
@@ -78,6 +98,22 @@
           },
           "rating": {
             "$ref": "#/$defs/rating"
+          },
+          "rights": {
+            "type": "object",
+            "description": "Licence and copyright for these nodes, describing them; never loosens anything.",
+            "properties": {
+              "license": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "description": "SPDX license expression for these nodes."
+              },
+              "copyright": {
+                "$ref": "#/$defs/copyright"
+              }
+            },
+            "additionalProperties": false
           }
         },
         "additionalProperties": false
@@ -239,6 +275,45 @@
           "items": {
             "$ref": "#/$defs/signer"
           }
+        }
+      },
+      "additionalProperties": false
+    },
+    "copyright": {
+      "type": "object",
+      "description": "A copyright statement: schema.org copyrightYear, copyrightHolder and copyrightNotice.",
+      "properties": {
+        "year": {
+          "type": "string",
+          "pattern": "^[0-9]{4}(-[0-9]{4})?$",
+          "description": "A year, or a range of years with the first not after the last; Readers check the order (U001)."
+        },
+        "holder": {
+          "type": "object",
+          "required": [
+            "name"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+            },
+            "url": {
+              "type": "string",
+              "maxLength": 2048,
+              "pattern": "^https?://"
+            }
+          },
+          "additionalProperties": false
+        },
+        "notice": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+          "description": "The exact copyright line to show, for example © 2026 Example Ltd."
         }
       },
       "additionalProperties": false

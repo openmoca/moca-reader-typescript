@@ -50,6 +50,11 @@
       ],
       "description": "When the package was first published: the W3C Publication Manifest's datePublished (spec/moca-package-spec.md §4.12). Informative."
     },
+    "datePackaged": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this version of the package was made: an RFC 3339 date-time with an offset (spec/moca-package-spec.md §4.12). Informative."
+    },
     "language": {
       "type": "string",
       "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*(?![\\s\\S])",
