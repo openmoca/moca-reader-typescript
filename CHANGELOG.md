@@ -11,6 +11,9 @@ For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/
 
 ### Fixed (found by an independent review)
 
+- Reader contract §7: a citation record's `trust.generated` now keeps `model` (the model's name and version) when the
+  node's OKF `generated` states it. Caught by the spec's new machine-made cases.
+
 - Contract §15.3 step 3: a composing package's stricter `ai` and export terms now apply to its members' records when
   its signers speak for the member (as for `upTo`), or the host allows unsigned packages to. Before, a member's own
   terms were used alone.
