@@ -77,7 +77,7 @@ test('a dense sidecar bound to an issued copy keeps each vector with its item', 
   assert.equal(byPath['lessons/one.md'].end, rep.bodyOffset + Buffer.byteLength(rep.body));
 });
 
-// Reader contract §3: the member limit counts every depth, so a long series needs room.
+// Reader contract §3: the member limit counts every depth, so a large composite package needs room.
 test('maxMembers defaults to 4,096', async () => {
   const { DEFAULT_LIMITS } = await import('../lib/source.js');
   assert.equal(DEFAULT_LIMITS.maxMembers, 4096);

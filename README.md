@@ -64,7 +64,10 @@ pkg.tags;           // ['refunds', ...]: without repeats
 pkg.apps;           // ['https://apps.example.com/legal-review', 'legal']: where the publisher suggests opening it; advice only
 pkg.readingOrder;   // 'https://example.com/moca/course#path': the ordered collection the package is read in, when it resolves
 pkg.datePublished;  // '2026-01-05': when the package was first published, as written; informative only
+pkg.publisher;      // { name, url?, description?, image?, sameAs? }: who publishes it, as written; the signer's claim
+pkg.contributors;   // [{ name, roles, url?, image?, sameAs? }]: credits with MARC relator roles; labels, not proof
 pkg.issuedCopy;     // { originalDigest, issuers, changedFiles } for an issued copy bound to its publisher's package
+pkg.terms;          // { declared?, problems, authority }: the creator's terms as written, and who stated them; labels, not locks
 pkg.diagnostics;    // [{ code, severity, message, file?, line? }]
 
 const library = new Library().add(pkg);
@@ -101,9 +104,9 @@ memory; the Reader never writes them to a file.
 
 | Export | Purpose |
 | --- | --- |
-| `readPackage(target, options)` | Read and check a package. `target`: path, `.moca`/`.zip` path, archive bytes (a `Uint8Array`, read in place: do not change it during the read), or `{ list(), read(path) }`. Options: `trustRoot`, `resolveMember`, `strict`, `limits`, `online`, `allowOfflineFallback`, `tufCachePath`. |
+| `readPackage(target, options)` | Read and check a package. `target`: path, `.moca`/`.zip` path, archive bytes (a `Uint8Array`, read in place: do not change it during the read), or `{ list(), read(path) }`. Options: `trustRoot`, `resolveMember`, `strict`, `limits`, `requireSignature`, `online`, `allowOfflineFallback`, `tufCachePath` (used only with `online`). |
 | `Library` | Holds verified packages (and their sidecar `chunks` and `index`); `citations()`, `get()`, and `search()` as a synchronous lexical shortcut; applies relations. Takes a `clock` for testing. |
-| `Search` | One entry point over a backend: `search(query, { limit, includeAll, locale, concepts, scope, upTo })`, with optional `hooks: { ingress, egress }`; `search.diagnostics` holds the latest call's findings, such as `S008`. The gate always runs last ([Reader contract §9](https://github.com/openmoca/moca-spec/blob/main/spec/moca-reader-contract.md#9-search)). `new Search({ digests, clock }, { backend })` searches a store from its ingest-time records. |
+| `Search` | One entry point over a backend: `search(query, { limit, includeAll, locale, concepts, scope, upTo, terms })`, with optional `hooks: { ingress, egress }` and `termsLimits` (the host's own `ai` values, floors only); a `terms` request applies the terms gate and adds each record's resolved `terms` ([Reader contract §15](https://github.com/openmoca/moca-spec/blob/main/spec/moca-reader-contract.md#15-creators-terms)); `search.diagnostics` holds the latest call's findings, such as `S008`. The gate always runs last ([Reader contract §9](https://github.com/openmoca/moca-spec/blob/main/spec/moca-reader-contract.md#9-search)). `new Search({ digests, clock }, { backend })` searches a store from its ingest-time records. |
 | `LexicalBackend`, `DenseBackend`, `MemoryStoreBackend` | Backends: BM25 over package text or sidecar chunks; sidecar vectors with a host embedder (`S006` on a model mismatch, `S007` for a package without vectors); a reference in-memory store. |
 | `mapTime(record, from, to, t)` | The same moment on another media description of the record's node: switch between the audio and video versions of an episode ([package spec §5.7](https://github.com/openmoca/moca-spec/blob/main/spec/moca-package-spec.md#57-media)). `null` when it is not there. |
 | `selectorMatches(selector, text)` | The evidence check behind `evidence[].matched` and `C011`. |
@@ -122,7 +125,12 @@ memory; the Reader never writes them to a file.
 | `CODES`, `formatText`, `formatJson`, `formatSarif` | Diagnostics. |
 
 `readPackage` never executes package content and performs no network I/O,
-except online Sigstore checks when `online` is set. Ontology files are parsed
+except online Sigstore checks when `online` is set: then, and only then, it
+refreshes Sigstore's trust material. Offline, a Sigstore bundle is verified
+against the trust root's `sigstore.trustedRoot`, or, without one, against the
+copy of the public-good trusted root that ships with the Sigstore library,
+which may be older than the live one. A trust-root entry with `ids` signs only
+the packages those ids cover (`A010` otherwise). Ontology files are parsed
 locally; `owl:imports` is reported, never followed. Embedders are supplied by
 the host, never named by a package.
 

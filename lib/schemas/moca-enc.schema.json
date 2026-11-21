@@ -26,7 +26,8 @@
         "distribution": true,
         "translations": true,
         "tags": true,
-        "apps": true
+        "apps": true,
+        "terms": true
       },
       "additionalProperties": false
     }

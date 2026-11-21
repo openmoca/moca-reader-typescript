@@ -9,6 +9,110 @@ For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/
 [moca-spec#8](https://github.com/openmoca/moca-spec/issues/8) and
 [moca-spec#9](https://github.com/openmoca/moca-spec/issues/9)).
 
+### Changed (limits, exact rules and signer binding)
+
+For moca-spec's hardening pass before 0.7.0: each rule has corpus cases there and unit tests here
+(`test/limits.test.js`).
+
+- **Sigstore identities are compared exactly** (attestations §6). The Reader verifies the bundle, reads the issuer and
+  subject from the verified certificate, and compares each with the trust root's itself, as a whole string.
+  `sigstoreIdentityFor` is the comparison.
+- **Offline Sigstore verification makes no request** (attestations §6). Without `sigstore.trustedRoot` and without
+  `online`, the only trust material is the copy of the public-good trusted root that ships with the Sigstore library,
+  read from its file: no update client is started and no cache is written. With `online`, the trust material is
+  refreshed from Sigstore's TUF repository first. The dependency `sigstore` is replaced by `@sigstore/tuf`.
+- **`ids` bind a signer to package ids** (moca-spec ADR-0040). A trust-root key or identity with `ids` counts as a
+  signer only of packages whose `id` its `ids` cover. Otherwise the new `A010_SIGNER_NOT_FOR_PACKAGE` (error) is
+  reported, the attestation's outcome is `invalid`, and the package is not `signed`. An entry without `ids` signs any
+  id, as before.
+- **The terms gate fails closed** (contract §15.3, §15.4): a container in `terms` that is present with the wrong type
+  (`ai`, `ai.allowed`, `rights`, `rights.export`, `nodes`, a `nodes` entry) sets everything under it to its strictest;
+  a record rated only under a scheme the host did not list is unrated; a malformed rating counts as explicit and
+  outside every listed scheme; a rating request with a member this version does not define (such as the drafted
+  `mode`) removes every record, counted as `rating.request` in `U004`.
+- **New limits** (contract §3): `maxAttestations` (256) and `maxAttestationBytes` (1 MiB), `A001` past either; at most
+  16 signature entries in one DSSE envelope (`MAX_SIGNATURES`, also enforced by `verifyEnvelope`); and the members of
+  every collection in a structure file, added together, counted against `maxTriples` (`O001`). A member list that
+  several collections share is walked once, and a long list is indexed in linear time.
+- **Archive records are checked before any entry is read** (contract §3): exactly one end-of-central-directory record
+  at the end of the file, no multi-disk or Zip64 archive, a directory that holds what it declares, and local headers
+  whose name and method match it. Otherwise `T003`.
+- **A manifest of the wrong shape never throws** (contract §5): a `moca.json` that is JSON but not an object is `M002`
+  and the read stops; a `locales` of the wrong type declares no locale.
+- **Text work is linear** (contract §3): links in a node's body, and Markdown and HTML evidence sources, are scanned
+  in one pass (`linkTargets`, and the scanners in `evidence-text.js`) with the same results as before.
+
+### Changed (a nesting limit)
+
+- Contract §3: JSON and YAML frontmatter are nested at most 64 levels deep (`MAX_NESTING`), counting the outermost
+  object or mapping. JSON is checked in one pass before it is parsed (`nestedTooDeep`, `parseJson`): `moca.json`
+  (`M001`), attestation files and their statements (`A001`), `moca-enc.json` (`E005`), and a sidecar's `index.json`
+  (`S001`) and payload lines (`S004`). Frontmatter is loaded with the YAML library's depth limit set to 64 (its
+  default is 100), and deeper frontmatter is `C002`. The check for long implicit keys uses the same limit and can no
+  longer throw.
+
+### Fixed (found by an independent review)
+
+- Reader contract §7: a citation record's `trust.generated` now keeps `model` (the model's name and version) when the
+  node's OKF `generated` states it. Caught by the spec's new machine-made cases.
+
+- Contract §15.3 step 3: a composing package's stricter `ai` and export terms now apply to its members' records when
+  its signers speak for the member (as for `upTo`), or the host allows unsigned packages to. Before, a member's own
+  terms were used alone.
+- Contract §7, §9.2: search de-duplication now keys on the whole span (start and end), so two chunks of one node that
+  share a start are both kept.
+
+### Added (rights and dates: package spec §4.12, §4.14; Reader contract §7, §15.3)
+
+- The package result carries `datePackaged`, as written, when the manifest passes its schema; citation records carry
+  `package.datePackaged`.
+- Terms gain `rights.export.allowed`, `rights.copyright`, `rights.notice` and `rights` (`license`, `copyright`) in
+  `terms.nodes` entries, checked with the rest of `terms` (a copyright year range out of order is `U001`).
+- Citation records carry `node.license` and `node.copyright`: the node's `terms.nodes` entry first, else the
+  manifest's `license` and `terms.rights.copyright`; a value with a terms problem is skipped.
+- Records from a search with a terms request carry `terms.rights.export`, resolved from the package (platform
+  default `true`; a malformed value counts as `false`). Export removes nothing from a search.
+- Vendored manifest, terms and citation-record schemas updated.
+
+### Added (credits: package spec §4.13)
+
+- The package result carries `publisher` (an object), `url` and `contributors`, as written, when the package is
+  valid; citation records carry `node.contributors` from a node's `moca.contributors`. A credit's image is checked
+  as a manifest image (`M010`) and left out when it fails. Credits are labels, not proof. Vendored manifest, node
+  and citation-record schemas updated; `publisher` as a string now fails the schema (`M002`).
+
+### Added (the creator's terms: package spec §4.14, Reader contract §15)
+
+- `pkg.terms`: `{ declared, problems, authority }`. The manifest's `terms` exactly as written, its problems
+  (`U001_TERMS_INVALID`, `U003_TERMS_UNKNOWN_VALUE`, warnings, never `M002`), and the authority, `packager` or
+  `unverified`, from the package's signatures only. `U002_TERMS_LOOSENED` for a node value looser than the package's.
+- Permissions are booleans under `ai.allowed` (`device`, `host`, `provider`, `training`, `machineTranslation`); provider
+  conditions are `noTraining` and `noRetention`. Every level only makes the platform defaults stricter: in 0.7.0 no
+  package can loosen them, so `ai.allowed.training: true` has no effect.
+- `search(query, { terms })` applies the terms gate and adds each record's resolved `terms`; `termsLimits` are the
+  host's floors. Records removed are counted in `U004_TERMS_EXCLUDED` (info). Without a terms request nothing changes.
+
+### Changed (alternative labels and ingress narrowing: package spec §5.6, Reader contract §9.2, §9.4)
+
+- `skos:altLabel` is read: concepts carry `altLabels` by language, in the order read, each once; the default
+  ontology-guided ingress matches a preferred or an alternative label, as written.
+- Concepts or a scope an ingress hook sets now narrow the search under composition and with backends that have no
+  pushdown: resolved hits are narrowed after the backend, before the egress hook and the gate, on every round.
+- A store search takes a structure source (`Search` takes `structure` in a store source): a library whose structure the hooks see and `scope` follows.
+
+### Changed (filters come before the limit: Reader contract §9.2)
+
+- `Search` returns the best `limit` records that pass the gate, however far down the unfiltered ranking they are. The
+  fixed cap of 200 candidates is gone: it asks the backend again, doubling the request, until `limit` records pass or
+  the backend returns fewer hits than asked. An egress hook runs again on each larger candidate list.
+- New option `maxCandidates` on `Search`: the host's bound on one call. A call it stops reports
+  `S010_SEARCH_TRUNCATED` (warning) in `search.diagnostics`. Unset by default.
+- `LexicalBackend` and `MemoryStoreBackend` score over every representation of the loaded packages, then apply the
+  filters, so a pushed-down filter never changes a score. The lexical and dense backends also apply the search's own
+  check for `upTo` and for concepts bound by composition, so such a search usually needs one request.
+- `HybridBackend` fuses each backend's whole ranking before filters, and keeps it for the rest of one search call;
+  `DenseBackend` embeds a query once however often it is asked again.
+
 ### Added (podcast and video series content: package spec §4.12, §5.6, §5.7, §7.1–§7.3; sidecar spec §5)
 
 - Media descriptions (`moca.media`): validated (`C005`, `C006`), exposed as `node.media`, never fetched. A time range

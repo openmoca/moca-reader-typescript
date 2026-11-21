@@ -18,7 +18,7 @@ permissions:
 # The other MOCA repositories, at fixed refs: release tags, or commits while a Spec Change
 # Proposal is in flight; never a branch (moca-spec CONTRIBUTING.md).
 env:
-  MOCA_SPEC_REF: a4e852615eaaffb3b8674767a6184507f019a4e6  # 0.7.0 release candidate; v0.7.0 once tagged
+  MOCA_SPEC_REF: 775ea27eef2ccdc3a419bc686aa3d5142d2d1357  # draft 0.7.0 nesting-limit branch; release-0.7.0 once merged
   MOCA_TOOLS_REF: 685268d93ac5d741bed9b8621145c93338627829  # 0.7.0 release candidate; v0.7.0 once tagged
 
 jobs:
@@ -109,12 +109,16 @@ jobs:
         working-directory: moca-reader-typescript
       - run: npm ci
         working-directory: moca-tools
-      # support-kb and the example trust root are unchanged since v0.6.0: its release files stand in for v0.7.0's
-      # until v0.7.0 is released.
-      - name: Example package from the moca-spec release
-        env:
-          GH_TOKEN: ${{ secrets.MOCA_REPOS_TOKEN || github.token }}
-        run: gh release download v0.6.0 -R ${{ github.repository_owner }}/moca-spec -p support-kb.moca -p example-trust-root.json -D "$RUNNER_TEMP/assets"
+      # Until v0.7.0 is released, support-kb and the example trust root are packed from the moca-spec checkout:
+      # v0.6.0's support-kb has a string publisher, which 0.7.0 refuses (M002).
+      - run: npm ci
+        working-directory: moca-spec
+      - name: Example package from the moca-spec checkout
+        run: |
+          mkdir -p "$RUNNER_TEMP/assets"
+          node node_modules/@openmoca/moca-lint/bin/moca-lint.js pack examples/support-kb -o "$RUNNER_TEMP/assets/support-kb.moca" --trust-root fixtures/signing-keys/trust-root.json
+          cp fixtures/signing-keys/trust-root.json "$RUNNER_TEMP/assets/example-trust-root.json"
+        working-directory: moca-spec
       - run: npm pack --pack-destination "$RUNNER_TEMP/assets"
         working-directory: moca-reader-typescript
       # Until @openmoca/moca-core is on npm and the repositories are public: install the Reader packed

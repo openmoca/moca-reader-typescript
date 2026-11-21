@@ -1,6 +1,8 @@
 name: Release
 
 # Push a vX.Y.Z tag on a commit in main: publishes @openmoca/moca-core to npm with provenance.
+# On a pull request to main, the same checks and `npm publish --dry-run` run, so the release path is proved
+# before release day; nothing is published.
 #
 # Trusted publishing: npm accepts this workflow, in the `release` environment, through a short-lived
 # OIDC token from GitHub Actions. There is no npm token in this repository. Publish this package
@@ -8,13 +10,54 @@ name: Release
 on:
   push:
     tags: ['v*']
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: read
 
+env:
+  # check:schemas compares the vendored schemas with this moca-spec. Move it with test.yml's pin.
+  MOCA_SPEC_REF: 775ea27eef2ccdc3a419bc686aa3d5142d2d1357  # draft 0.7.0 nesting-limit branch; release-0.7.0 once merged
+
 jobs:
+  check:
+    name: Check and pack (dry run)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: moca-reader-typescript
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/moca-spec
+          ref: ${{ env.MOCA_SPEC_REF }}
+          path: moca-spec
+          token: ${{ secrets.MOCA_REPOS_TOKEN || github.token }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: The tag is on main and matches the version
+        if: github.event_name == 'push'
+        working-directory: moca-reader-typescript
+        run: |
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main || { echo "::error::$GITHUB_REF_NAME is not on main"; exit 1; }
+          version=$(node -p "require('./package.json').version")
+          [ "v$version" = "$GITHUB_REF_NAME" ] || { echo "::error::package.json is $version, the tag is $GITHUB_REF_NAME"; exit 1; }
+      - run: npm ci
+        working-directory: moca-reader-typescript
+      - run: npm run check:schemas
+        working-directory: moca-reader-typescript
+        env:
+          MOCA_SPEC_DIR: ${{ github.workspace }}/moca-spec
+      - run: npm publish --dry-run --access public
+        working-directory: moca-reader-typescript
+
   publish:
     name: Publish to npm
+    needs: check
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     environment: release
     permissions:
@@ -22,13 +65,6 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: The tag is on main and matches the version
-        run: |
-          git merge-base --is-ancestor "$GITHUB_SHA" origin/main || { echo "::error::$GITHUB_REF_NAME is not on main"; exit 1; }
-          version=$(node -p "require('./package.json').version")
-          [ "v$version" = "$GITHUB_REF_NAME" ] || { echo "::error::package.json is $version, the tag is $GITHUB_REF_NAME"; exit 1; }
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -36,5 +72,4 @@ jobs:
       # Trusted publishing needs npm 11.5.1 or later.
       - run: npm install -g npm@^11.5.1
       - run: npm ci
-      - run: npm run check:schemas
       - run: npm publish --access public
