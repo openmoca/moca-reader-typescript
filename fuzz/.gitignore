@@ -1,0 +1,8 @@
+node_modules/
+corpus/
+corpus-files/
+crash-*
+timeout-*
+slow-unit-*
+oom-*
+kept-*/

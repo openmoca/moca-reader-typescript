@@ -1,0 +1,14 @@
+{
+  "name": "moca-core-fuzz",
+  "private": true,
+  "type": "module",
+  "description": "Fuzz targets for the Reader (fuzz/README.md). Kept apart so the Reader's own dependencies stay as they are.",
+  "scripts": {
+    "seed": "node seed.mjs ../../moca-spec corpus",
+    "fuzz:open": "jazzer open-search.fuzz.js corpus -i /lib/ -- -rss_limit_mb=4096 -max_len=1048576",
+    "fuzz:files": "jazzer package-files.fuzz.js corpus-files -i /lib/ -- -rss_limit_mb=4096 -max_len=65536"
+  },
+  "devDependencies": {
+    "@jazzer.js/core": "4.0.0"
+  }
+}
