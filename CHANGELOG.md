@@ -33,6 +33,12 @@ For moca-spec ADR-0041: everything the Reader hands on for a model goes through 
 For moca-spec's hardening pass before 0.7.0: each rule has corpus cases there and unit tests here
 (`test/limits.test.js`).
 
+- **Structure Turtle is nested at most 64 levels deep** (contract §3), fixed, for `structure.ttl` and host overlays
+  alike: each blank-node property list or collection is one level, counted over Turtle's own tokens (n3's lexer), so a
+  bracket in an IRI, a string, a comment or a prefixed name never counts, and the check does not recurse. Past it the
+  file is `O001` and none of its structure is read. Corpus cases `structure-nesting-at-limit` and
+  `structure-nesting-over-limit` (moca-spec#33).
+
 - **Sigstore identities are compared exactly** (attestations §6). The Reader verifies the bundle, reads the issuer and
   subject from the verified certificate, and compares each with the trust root's itself, as a whole string.
   `sigstoreIdentityFor` is the comparison.
