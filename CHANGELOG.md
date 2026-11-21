@@ -9,6 +9,39 @@ For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/
 [moca-spec#8](https://github.com/openmoca/moca-spec/issues/8) and
 [moca-spec#9](https://github.com/openmoca/moca-spec/issues/9)).
 
+### Changed (limits, exact rules and signer binding)
+
+For moca-spec's hardening pass before 0.7.0: each rule has corpus cases there and unit tests here
+(`test/limits.test.js`).
+
+- **Sigstore identities are compared exactly** (attestations §6). The Reader verifies the bundle, reads the issuer and
+  subject from the verified certificate, and compares each with the trust root's itself, as a whole string.
+  `sigstoreIdentityFor` is the comparison.
+- **Offline Sigstore verification makes no request** (attestations §6). Without `sigstore.trustedRoot` and without
+  `online`, the only trust material is the copy of the public-good trusted root that ships with the Sigstore library,
+  read from its file: no update client is started and no cache is written. With `online`, the trust material is
+  refreshed from Sigstore's TUF repository first. The dependency `sigstore` is replaced by `@sigstore/tuf`.
+- **`ids` bind a signer to package ids** (moca-spec ADR-0040). A trust-root key or identity with `ids` counts as a
+  signer only of packages whose `id` its `ids` cover. Otherwise the new `A010_SIGNER_NOT_FOR_PACKAGE` (error) is
+  reported, the attestation's outcome is `invalid`, and the package is not `signed`. An entry without `ids` signs any
+  id, as before.
+- **The terms gate fails closed** (contract §15.3, §15.4): a container in `terms` that is present with the wrong type
+  (`ai`, `ai.allowed`, `rights`, `rights.export`, `nodes`, a `nodes` entry) sets everything under it to its strictest;
+  a record rated only under a scheme the host did not list is unrated; a malformed rating counts as explicit and
+  outside every listed scheme; a rating request with a member this version does not define (such as the drafted
+  `mode`) removes every record, counted as `rating.request` in `U004`.
+- **New limits** (contract §3): `maxAttestations` (256) and `maxAttestationBytes` (1 MiB), `A001` past either; at most
+  16 signature entries in one DSSE envelope (`MAX_SIGNATURES`, also enforced by `verifyEnvelope`); and the members of
+  every collection in a structure file, added together, counted against `maxTriples` (`O001`). A member list that
+  several collections share is walked once, and a long list is indexed in linear time.
+- **Archive records are checked before any entry is read** (contract §3): exactly one end-of-central-directory record
+  at the end of the file, no multi-disk or Zip64 archive, a directory that holds what it declares, and local headers
+  whose name and method match it. Otherwise `T003`.
+- **A manifest of the wrong shape never throws** (contract §5): a `moca.json` that is JSON but not an object is `M002`
+  and the read stops; a `locales` of the wrong type declares no locale.
+- **Text work is linear** (contract §3): links in a node's body, and Markdown and HTML evidence sources, are scanned
+  in one pass (`linkTargets`, and the scanners in `evidence-text.js`) with the same results as before.
+
 ### Fixed (found by an independent review)
 
 - Reader contract §7: a citation record's `trust.generated` now keeps `model` (the model's name and version) when the

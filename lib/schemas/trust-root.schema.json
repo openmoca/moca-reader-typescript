@@ -50,7 +50,7 @@
               "minLength": 1
             },
             "uniqueItems": true,
-            "description": "Package ids this entry may speak for: in supersedes and conflictsWith relations, and, for the issued-copy role, whose copies it may issue. Exact ids, or prefixes ending in /, : or # (package spec section 7.2). Required with the issued-copy role."
+            "description": "Package ids this entry may speak for: the packages it signs with the package role (an entry without ids signs any id), supersedes and conflictsWith relations, and, for the issued-copy role, whose copies it may issue. Exact ids, or prefixes ending in /, : or # (package spec section 7.2). Required with the issued-copy role."
           },
           "reviewers": {
             "type": "array",
@@ -130,7 +130,7 @@
                   "minLength": 1
                 },
                 "uniqueItems": true,
-                "description": "Package ids this entry may speak for: in supersedes and conflictsWith relations, and, for the issued-copy role, whose copies it may issue. Exact ids, or prefixes ending in /, : or # (package spec section 7.2). Required with the issued-copy role."
+                "description": "Package ids this entry may speak for: the packages it signs with the package role (an entry without ids signs any id), supersedes and conflictsWith relations, and, for the issued-copy role, whose copies it may issue. Exact ids, or prefixes ending in /, : or # (package spec section 7.2). Required with the issued-copy role."
               },
               "reviewers": {
                 "type": "array",
