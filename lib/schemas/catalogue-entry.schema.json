@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://w3id.org/moca/schemas/v1/catalogue-entry.schema.json",
+  "title": "MOCA catalogue entry",
+  "description": "What a model may be told about one loaded package, for one terms request (Reader contract section 15.4, \"The catalogue rule\"; ADR-0041). An open package's entry, or a closed package's, which has exactly id, version, title, publisher (when the manifest has one), signed and closedBy. A hidden package has no entry. Every string except closedBy is package-supplied text (Reader contract section 12).",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/open"
+    },
+    {
+      "$ref": "#/$defs/closed"
+    }
+  ],
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The package's id."
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The package's version."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The manifest's title."
+    },
+    "publisher": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The name of the manifest's publisher: the signer's claim (package spec section 4.13)."
+    },
+    "signed": {
+      "type": "boolean",
+      "description": "Whether a package attestation verifies under the host's trust root, as package.signed in a citation record."
+    },
+    "open": {
+      "type": "object",
+      "required": [
+        "id",
+        "version",
+        "title",
+        "signed"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "version": {
+          "$ref": "#/$defs/version"
+        },
+        "title": {
+          "$ref": "#/$defs/title"
+        },
+        "description": {
+          "type": "string",
+          "description": "The manifest's description."
+        },
+        "publisher": {
+          "$ref": "#/$defs/publisher"
+        },
+        "signed": {
+          "$ref": "#/$defs/signed"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The result's tags, without repeats (package spec section 4.8)."
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The ids of the package's members that have an entry of their own in the same catalogue."
+        }
+      },
+      "additionalProperties": false
+    },
+    "closed": {
+      "type": "object",
+      "required": [
+        "id",
+        "version",
+        "title",
+        "signed",
+        "closedBy"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "version": {
+          "$ref": "#/$defs/version"
+        },
+        "title": {
+          "$ref": "#/$defs/title"
+        },
+        "publisher": {
+          "$ref": "#/$defs/publisher"
+        },
+        "signed": {
+          "$ref": "#/$defs/signed"
+        },
+        "closedBy": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "ai.allowed.device",
+              "ai.allowed.host",
+              "ai.allowed.provider",
+              "ai.providerRequires"
+            ]
+          },
+          "description": "The terms gate's reasons the package is closed for the request: field names only, never free text."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

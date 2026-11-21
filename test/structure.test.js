@@ -88,3 +88,31 @@ test('structure.json is an ordinary file: no Reader checks it (moca-spec ADR-001
   assert.equal(pkg.valid, true);
   assert.ok(!codes(pkg).some((c) => c.startsWith('O')), codes(pkg).join(','));
 });
+
+// Reader contract §3: structure Turtle is nested at most 64 levels deep, fixed, for structure.ttl and host overlays.
+const nested = (depth) => `${HEAD}x:A a skos:Concept ; x:part ${'[ x:part '.repeat(depth)}1${' ]'.repeat(depth)} .\n`;
+
+test('structure.ttl nested 64 levels deep is read; 65 is O001 and none of it is read', async () => {
+  const ok = await readPackage(makePackage({ ttl: nested(64) }));
+  assert.deepEqual(codes(ok), []);
+  assert.ok(ok.capabilities.includes('structured'));
+  const over = await readPackage(makePackage({ ttl: nested(65), concepts: [] }));
+  assert.deepEqual(codes(over), ['O001_ONTOLOGY_UNPARSEABLE']);
+  assert.equal(over.capabilities.includes('structured'), false);
+  // Collections count as levels too.
+  const lists = `${HEAD}x:A a skos:Concept ; x:part ${'( '.repeat(65)}1${' )'.repeat(65)} .\n`;
+  assert.deepEqual(codes(await readPackage(makePackage({ ttl: lists, concepts: [] }))), ['O001_ONTOLOGY_UNPARSEABLE']);
+});
+
+test('brackets in an IRI, a string, a comment or a prefixed name do not count; very deep text never exhausts the stack', async () => {
+  const many = '['.repeat(200);
+  const ttl = `${HEAD}# ${many}\nx:A a skos:Concept ; skos:prefLabel "${many}"@en ; x:see <https://example.org/${'%5B'.repeat(10)}> .\nx:B\\#1 a skos:Concept .\n`;
+  assert.deepEqual(codes(await readPackage(makePackage({ ttl, concepts: [] }))), []);
+  const deep = await readPackage(makePackage({ ttl: nested(100000), concepts: [] }));
+  assert.deepEqual(codes(deep), ['O001_ONTOLOGY_UNPARSEABLE']);
+});
+
+test('a host overlay nested past the limit is O001 with the overlay as the file', () => {
+  const library = new Library({ overlays: [{ id: 'deep', layer: 'application', source: nested(65) }] });
+  assert.deepEqual(library.diagnostics.items.map((d) => `${d.code} ${d.file}`), ['O001_ONTOLOGY_UNPARSEABLE overlay:deep']);
+});

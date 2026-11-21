@@ -9,10 +9,38 @@ For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/
 [moca-spec#8](https://github.com/openmoca/moca-spec/issues/8) and
 [moca-spec#9](https://github.com/openmoca/moca-spec/issues/9)).
 
+### Changed (what the terms gate covers)
+
+For moca-spec ADR-0041: everything the Reader hands on for a model goes through the terms gate. Unit tests in
+`test/terms-gate.test.js`; corpus cases `terms-mention-*`, `search-terms-mention-*`, `search-store-ingest-*`,
+`structure-terms-*` and `catalogue-terms-*` in moca-spec.
+
+- **`ai.allowed.mention`** resolves like every `allowed.*` field, with a platform default of `true` and no node level
+  (in a `nodes` entry it is `U003` and has no effect). The vendored terms schema gains it.
+- **Closed and hidden** (contract §15.4): `closureOf`, from a package's package-level resolved terms. A new module,
+  `lib/terms-gate.js`, gives search, ingest, structure and the catalogue one view of each package's terms.
+- **`Library.catalogue`**: what a model may be told about the loaded packages. Vendored `catalogue-entry.schema.json`.
+- **`Library.structureFor`**: the structure operations over the packages not closed for a request.
+- **`MemoryStoreBackend.ingest(library, { terms, termsLimits })`**: units the gate removes for the embedder's
+  destination are never embedded or stored; `ingestDiagnostics` holds `U004`.
+- **`U004`** carries `excluded` (removed records by reason) and `hidden` (how many came from hidden packages), in a
+  search and in an ingest.
+- **Relations name no hidden package**: in a search with a terms request, `trust.supersededBy` and
+  `trust.contestedBy` leave out entries that name a package hidden for it, in a library and a store search.
+
 ### Changed (limits, exact rules and signer binding)
 
 For moca-spec's hardening pass before 0.7.0: each rule has corpus cases there and unit tests here
 (`test/limits.test.js`).
+
+- **A frontmatter escape past U+10FFFF is `C002`** (package spec §5.1, YAML 1.2 §5.7): js-yaml reads
+  `"\U00110000"` as two lone surrogates, so the Reader checks double-quoted escapes itself and refuses the
+  frontmatter, as the other Readers' YAML libraries do. Corpus case `frontmatter-escape-past-unicode` (moca-spec#32).
+- **Structure Turtle is nested at most 64 levels deep** (contract §3), fixed, for `structure.ttl` and host overlays
+  alike: each blank-node property list or collection is one level, counted over Turtle's own tokens (n3's lexer), so a
+  bracket in an IRI, a string, a comment or a prefixed name never counts, and the check does not recurse. Past it the
+  file is `O001` and none of its structure is read. Corpus cases `structure-nesting-at-limit` and
+  `structure-nesting-over-limit` (moca-spec#33).
 
 - **Sigstore identities are compared exactly** (attestations §6). The Reader verifies the bundle, reads the issuer and
   subject from the verified certificate, and compares each with the trust root's itself, as a whole string.

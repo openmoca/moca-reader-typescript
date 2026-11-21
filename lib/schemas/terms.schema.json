@@ -94,7 +94,7 @@
             }
           },
           "ai": {
-            "$ref": "#/$defs/ai"
+            "$ref": "#/$defs/nodeAi"
           },
           "rating": {
             "$ref": "#/$defs/rating"
@@ -123,6 +123,61 @@
   "additionalProperties": false,
   "$defs": {
     "ai": {
+      "type": "object",
+      "properties": {
+        "allowed": {
+          "type": "object",
+          "description": "Permissions, each true or false; an absent key is not set.",
+          "properties": {
+            "device": {
+              "type": "boolean",
+              "description": "Whether AI use may run on the person's own device."
+            },
+            "host": {
+              "type": "boolean",
+              "description": "Whether AI use may run in the host's own service."
+            },
+            "provider": {
+              "type": "boolean",
+              "description": "Whether AI use may run with a third party's model."
+            },
+            "training": {
+              "type": "boolean",
+              "description": "Whether the work may be used to train a model."
+            },
+            "machineTranslation": {
+              "type": "boolean",
+              "description": "Whether the work may be translated by a machine."
+            },
+            "mention": {
+              "type": "boolean",
+              "description": "Whether a model that may not receive this work may be told the work exists. Package level only (Reader contract section 15.4, ADR-0041)."
+            }
+          },
+          "additionalProperties": false
+        },
+        "providerRequires": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "noTraining",
+              "noRetention"
+            ]
+          },
+          "uniqueItems": true,
+          "maxItems": 2
+        },
+        "answerSources": {
+          "enum": [
+            "work",
+            "model"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "nodeAi": {
+      "description": "A nodes entry's ai values: as the package's, except allowed.mention, which is package level only (a member this version does not know here, U003).",
       "type": "object",
       "properties": {
         "allowed": {
