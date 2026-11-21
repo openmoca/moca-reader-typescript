@@ -42,6 +42,15 @@ For moca-spec's hardening pass before 0.7.0: each rule has corpus cases there an
 - **Text work is linear** (contract §3): links in a node's body, and Markdown and HTML evidence sources, are scanned
   in one pass (`linkTargets`, and the scanners in `evidence-text.js`) with the same results as before.
 
+### Changed (a nesting limit)
+
+- Contract §3: JSON and YAML frontmatter are nested at most 64 levels deep (`MAX_NESTING`), counting the outermost
+  object or mapping. JSON is checked in one pass before it is parsed (`nestedTooDeep`, `parseJson`): `moca.json`
+  (`M001`), attestation files and their statements (`A001`), `moca-enc.json` (`E005`), and a sidecar's `index.json`
+  (`S001`) and payload lines (`S004`). Frontmatter is loaded with the YAML library's depth limit set to 64 (its
+  default is 100), and deeper frontmatter is `C002`. The check for long implicit keys uses the same limit and can no
+  longer throw.
+
 ### Fixed (found by an independent review)
 
 - Reader contract §7: a citation record's `trust.generated` now keeps `model` (the model's name and version) when the
