@@ -18,7 +18,7 @@ permissions:
 
 env:
   # check:schemas compares the vendored schemas with this moca-spec. Move it with test.yml's pin.
-  MOCA_SPEC_REF: ff0813433129f0cd44db4ab1674b68cb2760b3c0  # draft 0.7.0 terms branch (with credits); release-0.7.0 once merged
+  MOCA_SPEC_REF: 4e2eba0545305b35e670762b1377d6d7ded4b283  # draft 0.7.0 hardening branch; release-0.7.0 once merged
 
 jobs:
   check:
