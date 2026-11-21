@@ -61,6 +61,9 @@ For moca-spec's hardening pass before 0.7.0: each rule has corpus cases there an
   terms were used alone.
 - Contract §7, §9.2: search de-duplication now keys on the whole span (start and end), so two chunks of one node that
   share a start are both kept.
+- Reader contract §11: the summaries in `CODES` for `E002`, `E005`, `E006`, `C002`, `A001`, `R002`, `M010` and `M009`
+  now match the contract's wording. The `M009` message says the package is read under the newest rules the Reader
+  implements, not on a best-effort basis.
 
 ### Added (rights and dates: package spec §4.12, §4.14; Reader contract §7, §15.3)
 
