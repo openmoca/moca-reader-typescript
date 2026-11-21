@@ -36,3 +36,16 @@ test('numbers too large to be finite are read as .inf is (package spec §5.1)', 
   const { data } = read(`a: 1e400\nb: -1e400\nc: 0x${'f'.repeat(300)}\nd: ${'9'.repeat(5000)}\ne: "1e400"\nf: 0x10`);
   assert.deepEqual(data, { type: 'Note', a: Infinity, b: -Infinity, c: Infinity, d: Infinity, e: '1e400', f: 16 });
 });
+
+test('a double-quoted escape past U+10FFFF is not a Unicode character: the frontmatter is invalid (C002)', () => {
+  const fm = (yaml) => splitFrontmatter(`---\n${yaml}\n---\nbody`);
+  const past = fm('a: 1\ntitle: "\\U00110000"');
+  assert.match(past.error, /U\+10FFFF/);
+  assert.equal(past.line, 3);
+  assert.equal(past.data, undefined);
+  assert.equal(fm('title: "\\U0010FFFF"').data.title, '\u{10FFFF}');
+  // Only double-quoted scalars have escapes; an escaped backslash is text.
+  for (const text of ['title: "\\\\U00110000"', 'title: \\U00110000', "title: '\\U00110000'", '# "\\U00110000"\ntitle: a']) {
+    assert.equal(fm(text).error, undefined, text);
+  }
+});

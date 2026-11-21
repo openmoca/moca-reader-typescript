@@ -33,6 +33,9 @@ For moca-spec ADR-0041: everything the Reader hands on for a model goes through 
 For moca-spec's hardening pass before 0.7.0: each rule has corpus cases there and unit tests here
 (`test/limits.test.js`).
 
+- **A frontmatter escape past U+10FFFF is `C002`** (package spec §5.1, YAML 1.2 §5.7): js-yaml reads
+  `"\U00110000"` as two lone surrogates, so the Reader checks double-quoted escapes itself and refuses the
+  frontmatter, as the other Readers' YAML libraries do. Corpus case `frontmatter-escape-past-unicode` (moca-spec#32).
 - **Structure Turtle is nested at most 64 levels deep** (contract §3), fixed, for `structure.ttl` and host overlays
   alike: each blank-node property list or collection is one level, counted over Turtle's own tokens (n3's lexer), so a
   bracket in an IRI, a string, a comment or a prefixed name never counts, and the check does not recurse. Past it the
