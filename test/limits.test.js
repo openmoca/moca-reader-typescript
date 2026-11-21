@@ -2,14 +2,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { generateKeyPairSync } from 'node:crypto';
-import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import net from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import AdmZip from 'adm-zip';
 import {
   readPackage, archiveSource, createEnvelope, verifyEnvelope, packageStatement, parseStructure, StructureGraph, Diagnostics,
-  Library, Search, LexicalBackend, DEFAULT_LIMITS, PAYLOAD_TYPE,
+  Library, Search, LexicalBackend, DEFAULT_LIMITS, PAYLOAD_TYPE, bindSidecar,
 } from '../lib/index.js';
 import { sigstoreIdentityFor, verifySignature, loadTrustRoot } from '../lib/attestations.js';
 import { MAX_SIGNATURES } from '../lib/dsse.js';
@@ -416,4 +416,68 @@ test('Markdown and HTML sources are normalised as before', () => {
   assert.equal(htmlText('<p>One &amp; <b>two</b></p><script>var a = "</p>";</script><STYLE type="x">p{}</style >three<script>never closed'), 'One & twothreenever closed');
   assert.equal(htmlText('a < b and c > d <br/> e <unclosed'), 'a  d  e <unclosed');
   assert.equal(htmlText('<scripts>kept</scripts> <script >gone</SCRIPT>'), 'kept ');
+});
+
+// --- Nesting (contract §3): 128 levels are read, 129 are malformed ---
+
+test('JSON nested more than 128 levels deep is refused before it is parsed', async () => {
+  const { nestedTooDeep, parseJson, MAX_NESTING } = await import('../lib/json-strict.js');
+  assert.equal(MAX_NESTING, 128);
+  const arrays = (n) => `${'['.repeat(n)}${']'.repeat(n)}`;
+  const objects = (n) => `${'{"a":'.repeat(n)}1${'}'.repeat(n)}`;
+  for (const make of [arrays, objects]) {
+    assert.equal(nestedTooDeep(make(128)), false);
+    assert.equal(nestedTooDeep(make(129)), true);
+    assert.doesNotThrow(() => parseJson(make(128)));
+    assert.throws(() => parseJson(make(129)), /128 levels/);
+  }
+  // Brackets inside strings are text; siblings do not add levels.
+  assert.equal(nestedTooDeep(JSON.stringify({ a: '['.repeat(500), 'b\\"[': '{'.repeat(500) })), false);
+  assert.equal(nestedTooDeep(`[${Array.from({ length: 1000 }, () => '[]').join(',')}]`), false);
+  // Far past the limit costs one pass, and never reaches the parser.
+  const started = performance.now();
+  assert.throws(() => parseJson('['.repeat(5_000_000)), /128 levels/);
+  assert.ok(performance.now() - started < 2000);
+});
+
+test('each kind of package JSON reports nesting past the limit with its own code', async () => {
+  const deep = `${'['.repeat(128)}${']'.repeat(128)}`;
+  const base = { id: ID, version: '1.0.0', title: 'T' };
+  const manifest = (depth) => `{"id":"${ID}","version":"1.0.0","title":"T","x-example-nested":${'['.repeat(depth)}${']'.repeat(depth)}}`;
+  assert.deepEqual(codes(await readPackage(makePackage(manifest(127)))), []);
+  assert.deepEqual(codes(await readPackage(makePackage(manifest(128)))), ['M001_MANIFEST_INVALID_JSON']);
+  assert.deepEqual(codes(await readPackage(makePackage('['.repeat(200_000)))), ['M001_MANIFEST_INVALID_JSON']);
+
+  // An attestation file, and the statement inside one.
+  const keys = keyPair();
+  const signed = await signedPackage(keys);
+  assert.deepEqual(codes(await readPackage(signed, { trustRoot: trustRootFor(keys) })), []);
+  const file = join(signed, 'attestations', 'package.k.dsse.json');
+  const envelope = JSON.parse(readFileSync(file, 'utf8'));
+  writeFileSync(file, JSON.stringify(envelope).replace(/\}$/, `,"x":${deep}}`));
+  assert.deepEqual(codes(await readPackage(signed, { trustRoot: trustRootFor(keys) })), ['A001_ATTESTATION_MALFORMED']);
+  const statement = `{"_type":"https://in-toto.io/Statement/v1","subject":[],"predicateType":"https://w3id.org/moca/attestation/package/v1","predicate":${deep}}`;
+  writeFileSync(file, JSON.stringify({ ...envelope, payload: Buffer.from(statement).toString('base64') }));
+  assert.deepEqual(codes(await readPackage(signed, { trustRoot: trustRootFor(keys) })), ['A001_ATTESTATION_MALFORMED']);
+
+  // A sidecar's index.json.
+  const pkg = await readPackage(makePackage(base));
+  const sidecar = mkdtempSync(join(tmpdir(), 'moca-sidecar-'));
+  writeFileSync(join(sidecar, 'index.json'), `{"x":${deep}}`);
+  const bound = bindSidecar(sidecar, pkg);
+  assert.equal(bound.usable, false);
+  assert.match(bound.diagnostics.map((d) => `${d.code} ${d.message}`).join('\n'), /S001_SIDECAR_INVALID index\.json is not valid JSON: nested more than 128 levels deep/);
+});
+
+test('frontmatter nested more than 128 levels deep is invalid (C002)', async () => {
+  const node = (depth) => `---\ntype: Note\ntitle: A\nx: ${'['.repeat(depth)}${']'.repeat(depth)}\n---\n\n# A\n`;
+  const base = { id: ID, version: '1.0.0', title: 'T' };
+  // The frontmatter mapping is the first level.
+  assert.deepEqual(codes(await readPackage(makePackage(base, { 'content/a.md': node(127) }))), []);
+  assert.ok(codes(await readPackage(makePackage(base, { 'content/a.md': node(128) }))).includes('C002_FRONTMATTER_INVALID'));
+  assert.ok(codes(await readPackage(makePackage(base, { 'content/a.md': node(20_000) }))).includes('C002_FRONTMATTER_INVALID'));
+  // Block style counts the same way: mappings inside mappings.
+  const block = (depth) => `---\ntype: Note\ntitle: A\n${Array.from({ length: depth }, (_, i) => `${' '.repeat(i)}k:`).join('\n')} 1\n---\n\n# A\n`;
+  assert.deepEqual(codes(await readPackage(makePackage(base, { 'content/a.md': block(127) }))), []);
+  assert.ok(codes(await readPackage(makePackage(base, { 'content/a.md': block(128) }))).includes('C002_FRONTMATTER_INVALID'));
 });
