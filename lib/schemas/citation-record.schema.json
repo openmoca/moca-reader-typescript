@@ -455,7 +455,7 @@
         },
         "ai": {
           "type": "object",
-          "description": "Each permission of terms.ai, in the same shape (allowed.device, allowed.host, allowed.provider, allowed.training, allowed.machineTranslation, providerRequires, answerSources), as { value, decidedBy }.",
+          "description": "Each permission of terms.ai, in the same shape (allowed.device, allowed.host, allowed.provider, allowed.training, allowed.machineTranslation, allowed.mention, providerRequires, answerSources), as { value, decidedBy }.",
           "properties": {
             "allowed": {
               "type": "object",

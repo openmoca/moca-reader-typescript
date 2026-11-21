@@ -9,6 +9,25 @@ For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/
 [moca-spec#8](https://github.com/openmoca/moca-spec/issues/8) and
 [moca-spec#9](https://github.com/openmoca/moca-spec/issues/9)).
 
+### Changed (what the terms gate covers)
+
+For moca-spec ADR-0041: everything the Reader hands on for a model goes through the terms gate. Unit tests in
+`test/terms-gate.test.js`; corpus cases `terms-mention-*`, `search-terms-mention-*`, `search-store-ingest-*`,
+`structure-terms-*` and `catalogue-terms-*` in moca-spec.
+
+- **`ai.allowed.mention`** resolves like every `allowed.*` field, with a platform default of `true` and no node level
+  (in a `nodes` entry it is `U003` and has no effect). The vendored terms schema gains it.
+- **Closed and hidden** (contract §15.4): `closureOf`, from a package's package-level resolved terms. A new module,
+  `lib/terms-gate.js`, gives search, ingest, structure and the catalogue one view of each package's terms.
+- **`Library.catalogue`**: what a model may be told about the loaded packages. Vendored `catalogue-entry.schema.json`.
+- **`Library.structureFor`**: the structure operations over the packages not closed for a request.
+- **`MemoryStoreBackend.ingest(library, { terms, termsLimits })`**: units the gate removes for the embedder's
+  destination are never embedded or stored; `ingestDiagnostics` holds `U004`.
+- **`U004`** carries `excluded` (removed records by reason) and `hidden` (how many came from hidden packages), in a
+  search and in an ingest.
+- **Relations name no hidden package**: in a search with a terms request, `trust.supersededBy` and
+  `trust.contestedBy` leave out entries that name a package hidden for it, in a library and a store search.
+
 ### Changed (limits, exact rules and signer binding)
 
 For moca-spec's hardening pass before 0.7.0: each rule has corpus cases there and unit tests here
