@@ -25,17 +25,17 @@ jobs:
     name: Check and pack (dry run)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           path: moca-reader-typescript
           fetch-depth: 0
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           repository: ${{ github.repository_owner }}/moca-spec
           ref: ${{ env.MOCA_SPEC_REF }}
           path: moca-spec
           token: ${{ secrets.MOCA_REPOS_TOKEN || github.token }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24
       - name: The tag is on main and matches the version
@@ -64,12 +64,14 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
-      # Trusted publishing needs npm 11.5.1 or later.
-      - run: npm install -g npm@^11.5.1
-      - run: npm ci
+      # Trusted publishing needs npm 11.5.1 or later; this one is pinned exactly.
+      - run: npm install -g --ignore-scripts npm@11.21.3
+      # This job holds the publishing identity, so it installs without running any package's install scripts.
+      # The packages have no build step and no lifecycle scripts of their own.
+      - run: npm ci --ignore-scripts
       - run: npm publish --access public
