@@ -37,7 +37,7 @@ jobs:
           path: moca-spec
           # Read access to the other MOCA repos while they are private.
           token: ${{ secrets.MOCA_REPOS_TOKEN || github.token }}
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
       - run: node moca-spec/scripts/check-deps.mjs moca-reader-typescript
@@ -60,7 +60,7 @@ jobs:
           path: moca-spec
           # Read access to the other MOCA repos while they are private.
           token: ${{ secrets.MOCA_REPOS_TOKEN || github.token }}
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
           cache: npm
@@ -102,7 +102,7 @@ jobs:
           ref: ${{ env.MOCA_TOOLS_REF }}
           path: moca-tools
           token: ${{ secrets.MOCA_REPOS_TOKEN || github.token }}
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
       - run: npm ci
