@@ -74,6 +74,10 @@ For moca-spec's hardening pass before 0.7.0: each rule has corpus cases there an
   the expression it replaces and count its steps.
 - **Entry names: trailing slashes are removed in one pass** (contract §3), for archive entries and host sources
   (`withoutTrailingSlashes`), with the same names as before.
+- **log.md: date headings are read in one pass** (contract §3, package spec §5.1): `##`, white space, then the rest
+  of the line, whatever it holds (`logHeading`). A heading that holds a carriage return, a line separator (U+2028) or
+  a paragraph separator (U+2029) and no date is now `C004`, as in the other Readers. Corpus cases `log-heading-cr`
+  and `log-heading-line-separator`.
 - **Dependencies**: `@sigstore/verify` 4.1.3 and `@sigstore/bundle` 5.0.1, in `package-lock.json`.
 
 ### Changed (a nesting limit)

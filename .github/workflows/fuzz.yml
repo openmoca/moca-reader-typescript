@@ -22,7 +22,7 @@ permissions:
 
 env:
   # Seeds and the package-files base come from the conformance corpus at a fixed ref (moca-spec CONTRIBUTING.md).
-  MOCA_SPEC_REF: bdb68a360f9ed82b5b0c3a37c017649323a01e59  # release-0.7.0 (0.7.0 release candidate); v0.7.0 once tagged
+  MOCA_SPEC_REF: 3fc01ed2da021afdf6f10f4cb3dafb41d2101a79  # fix/log-heading (two log.md heading cases); move to the merge commit
 
 jobs:
   fuzz:

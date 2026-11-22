@@ -1,14 +1,17 @@
 // Contract §3: a Reader's work is bounded by the size of what it reads. The scanners here replace regular
-// expressions; each must give exactly what the expression gave, and its steps must grow in line with its input.
+// expressions; each must give what the expression gave on the inputs it handled, and its steps must grow in line with
+// its input.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { declaredPrefixes } from '../lib/structure.js';
 import { withoutTrailingSlashes } from '../lib/source.js';
+import { logHeading } from '../lib/content.js';
 
 // The expressions the scanners replace, kept here as the reference on short inputs.
 const PREFIX_DECL = /^\s*(?:@prefix|PREFIX)\s+([A-Za-z][\w.-]*)?:/gim;
 const expectedPrefixes = (text) => [...text.matchAll(PREFIX_DECL)].map((m) => m[1]).filter(Boolean);
 const expectedTrim = (name) => name.replace(/\/+$/, '');
+const expectedHeading = (line) => line.match(/^##\s+(.*)$/)?.[1] ?? null;
 
 const MIB = 1024 * 1024;
 
@@ -99,5 +102,34 @@ test('trailing slashes: steps grow in line with the name', () => {
     const work = { steps: 0 };
     withoutTrailingSlashes(name, work);
     assert.ok(work.steps <= name.length, `${work.steps} steps for ${name.length} characters`);
+  }
+});
+
+test('log.md headings: the scanner gives what the expression gives on ordinary headings', () => {
+  const lines = ['## 2026-11-22', '## 2026-11-22 Release', '##\t2026-11-22', '##  \t 2026-11-22  ', '## 2026-11-22\t',
+    '## Release', '## ', '##\t', '##', '#', '', '### 2026-11-22', '###', '##2026-11-22', ' ## 2026-11-22',
+    '## 26-11-22', '## 2026-1-22', '## \u00a02026-11-22', '##\u30002026-11-22', '## \ufeff2026-11-22', 'x ## 2026-11-22',
+    '## 2026-11-22 ## 2026-11-23', '## é', '# 2026-11-22'];
+  for (const line of lines) assert.equal(logHeading(line), expectedHeading(line), JSON.stringify(line));
+});
+
+test('log.md headings: CR, U+2028 and U+2029 are part of the heading text', () => {
+  const table = [
+    ['## Release\rnotes', 'Release\rnotes'],
+    ['## 2026-11-22\rnotes', '2026-11-22\rnotes'],
+    ['## Release\u2028notes', 'Release\u2028notes'],
+    ['## Release\u2029', 'Release\u2029'],
+    ['##\r2026-11-22', '2026-11-22'],
+    ['## \r', ''],
+  ];
+  for (const [line, text] of table) assert.equal(logHeading(line), text, JSON.stringify(line));
+});
+
+test('log.md headings: steps grow in line with the line, at 4 MiB', () => {
+  const lines = [`##${' '.repeat(4 * MIB)}x\r`, `## ${'x '.repeat(2 * MIB)}\u2028`, `##${'\t'.repeat(4 * MIB)}`];
+  for (const line of lines) {
+    const work = { steps: 0 };
+    const text = logHeading(line, work);
+    assert.ok(text !== null && work.steps <= line.length, `${work.steps} steps for ${line.length} characters`);
   }
 });
