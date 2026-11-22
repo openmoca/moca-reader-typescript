@@ -69,6 +69,12 @@ For moca-spec's hardening pass before 0.7.0: each rule has corpus cases there an
   and the read stops; a `locales` of the wrong type declares no locale.
 - **Text work is linear** (contract §3): links in a node's body, and Markdown and HTML evidence sources, are scanned
   in one pass (`linkTargets`, and the scanners in `evidence-text.js`) with the same results as before.
+- **Structure: prefix declarations are found in one pass** (contract §3), in `structure.ttl` and host overlays alike
+  (`declaredPrefixes`), with the same prefixes as before. Unit tests in `test/linear-scans.test.js` compare it with
+  the expression it replaces and count its steps.
+- **Entry names: trailing slashes are removed in one pass** (contract §3), for archive entries and host sources
+  (`withoutTrailingSlashes`), with the same names as before.
+- **Dependencies**: `@sigstore/verify` 4.1.3 and `@sigstore/bundle` 5.0.1, in `package-lock.json`.
 
 ### Changed (a nesting limit)
 
