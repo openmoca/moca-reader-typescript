@@ -18,7 +18,7 @@ permissions:
 # The other MOCA repositories, at fixed refs: release tags, or commits while a Spec Change
 # Proposal is in flight; never a branch (moca-spec CONTRIBUTING.md).
 env:
-  MOCA_SPEC_REF: 2025e88ed02707f68cc6a7924f033cb725d1fc62  # release-0.7.0 (log.md heading fix merged); v0.7.0 once tagged
+  MOCA_SPEC_REF: c6f09b311bc0a3cf851a5d60e0cad17e48283923  # release-0.7.0 (0.7.0 dated); v0.7.0 once tagged
   MOCA_TOOLS_REF: e46d709ddb7f5802e60238cc78af2dd81b90744b  # release-0.7.0 (sigstore lock update); v0.7.0 once tagged
 
 jobs:
