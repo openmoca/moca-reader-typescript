@@ -9,8 +9,8 @@ All notable changes to @openmoca/moca-core. The format follows [Keep a Changelog
 - **A file swapped for a symbolic link between listing and reading** (CodeQL `js/file-system-race`). The directory
   source checked a file with `lstat` and then read it by path, so a link swapped in between could be followed. It now
   opens the file once, with `O_NOFOLLOW` where the platform has it, checks the open handle is a regular file, and reads
-  from that handle. Windows has no `O_NOFOLLOW`: there the path is compared with the handle after opening, and a link
-  is refused. Behaviour for ordinary packages is unchanged. Test: `test/source-race.test.js`.
+  from that handle. Windows has no `O_NOFOLLOW`: there the path is compared with the handle after opening (device and file
+  number as BigInt, so a 64-bit file number is exact), and a link is refused. Behaviour for ordinary packages is unchanged. Test: `test/source-race.test.js`.
 
 ## [0.7.0] - 2026-11-15
 
