@@ -18,7 +18,7 @@ permissions:
 
 env:
   # check:schemas compares the vendored schemas with this moca-spec. Move it with test.yml's pin.
-  MOCA_SPEC_REF: c6f09b311bc0a3cf851a5d60e0cad17e48283923  # release-0.7.0 (0.7.0 dated); v0.7.0 once tagged
+  MOCA_SPEC_REF: 9adec0e95c978fda6a16bfda01970ede5f78754b  # v0.7.0
 
 jobs:
   check:
@@ -51,8 +51,17 @@ jobs:
         working-directory: moca-reader-typescript
         env:
           MOCA_SPEC_DIR: ${{ github.workspace }}/moca-spec
-      - run: npm publish --dry-run --access public
+      - name: Pack, then publish dry run unless this version is already on npm
         working-directory: moca-reader-typescript
+        run: |
+          npm pack --dry-run
+          name=$(node -p "require('./package.json').name")
+          version=$(node -p "require('./package.json').version")
+          if [ -n "$(npm view "$name@$version" version 2>/dev/null)" ]; then
+            echo "::notice::$name@$version is already on npm; skipping the publish dry run"
+          else
+            npm publish --dry-run --access public
+          fi
 
   publish:
     name: Publish to npm
