@@ -392,6 +392,11 @@
             "additionalProperties": false
           }
         },
+        "language": {
+          "type": "string",
+          "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*(?![\\s\\S])",
+          "description": "The node's language when it is not the package's, in a default-language file only (spec/moca-package-spec.md §5.3, §5.4)."
+        },
         "contributors": {
           "type": "array",
           "maxItems": 32,

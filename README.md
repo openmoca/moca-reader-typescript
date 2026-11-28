@@ -61,6 +61,7 @@ pkg.capabilities;   // ['core', 'signed', ...]
 pkg.distribution;   // 'open', 'encrypted-only' or 'service-only': the publisher's intent, a label only
 pkg.images;         // [{ src, role, type, sizes?, alt? }]: the images that passed their checks; read the bytes from the package
 pkg.translations;   // { fr: { title?, description?, tags?, alt? } }: the manifest's own text per declared locale
+pkg.localeCoverage; // { en: { nodes: 40, of: 40 }, fr: { nodes: 12, of: 40 } }: how far the nodes come in each language
 pkg.tags;           // ['refunds', ...]: without repeats
 pkg.apps;           // ['https://apps.example.com/legal-review', 'legal']: where the publisher suggests opening it; advice only
 pkg.readingOrder;   // 'https://example.com/moca/course#path': the ordered collection the package is read in, when it resolves
