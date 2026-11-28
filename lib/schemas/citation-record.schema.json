@@ -179,37 +179,47 @@
                   },
                   "additionalProperties": false
                 }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "tracks": {
+          "type": "array",
+          "description": "The node's timed text tracks that stand (spec/moca-package-spec.md §5.7), each with its kind.",
+          "items": {
+            "type": "object",
+            "required": [
+              "media",
+              "source",
+              "language",
+              "kind"
+            ],
+            "properties": {
+              "media": {
+                "type": "string",
+                "minLength": 1
               },
-              "captions": {
-                "type": "array",
-                "description": "Caption and subtitle tracks, each a WebVTT source with its language and HTML track kind (spec/moca-package-spec.md §5.7).",
-                "items": {
-                  "type": "object",
-                  "required": [
-                    "source",
-                    "language",
-                    "kind"
-                  ],
-                  "properties": {
-                    "source": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "language": {
-                      "type": "string",
-                      "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*(?![\\s\\S])"
-                    },
-                    "kind": {
-                      "enum": [
-                        "subtitles",
-                        "captions",
-                        "descriptions",
-                        "chapters"
-                      ]
-                    }
-                  },
-                  "additionalProperties": false
-                }
+              "source": {
+                "type": "string",
+                "minLength": 1
+              },
+              "language": {
+                "type": "string",
+                "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*(?![\\s\\S])"
+              },
+              "kind": {
+                "enum": [
+                  "subtitles",
+                  "captions",
+                  "descriptions",
+                  "chapters"
+                ]
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
               }
             },
             "additionalProperties": false

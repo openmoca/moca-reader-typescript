@@ -57,10 +57,10 @@ For moca-spec 0.8.0: content in more than one language, and store states.
 - **`localeMode`** in search (contract §9): `choose` (the default), `only` (records in another language drop out, in
   the gate) and `first` (records ordered by the first locale entry they match, then the next; the search asks again
   until `limit` records of the first group pass). Unit test in `test/locale.test.js`.
-- **Caption tracks** (package spec §5.7): `captions` on a media description, each `{ source, language, kind? }`,
-  checked entry by entry (`C005`, `C006`; the description stands) and carried in `node.media` with `kind` filled in.
-  Evidence is still checked against `transcript` only. The vendored node and citation-record schemas follow
-  moca-spec.
+- **Timed text tracks** (package spec §5.7): `moca.tracks` beside `moca.media`, each `{ media, source, language,
+  kind?, label? }`, naming the media description it belongs to; a bad entry is dropped on its own (`C005`, `C006`);
+  records carry the tracks that stand in `node.tracks`, `kind` defaulting to `subtitles`. Both vendored schemas
+  updated. A 0.7 Reader ignores `moca.tracks` and keeps the media.
 - **`moca.language`** (package spec §5.3, §5.4): a default file's own language sets its node's `language`, so its
   `node.locale` and its tag in the lookup; in a translation it is `C005` and ignored. The vendored node schema
   follows moca-spec.
