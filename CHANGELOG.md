@@ -2,16 +2,31 @@
 
 All notable changes to @openmoca/moca-core. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## Unreleased: 0.8.0
 
-For moca-spec 0.8.0.
+For moca-spec 0.8.0: content in more than one language, and store states.
 
-### Changed
+### Changed (store states)
 
 - A store search takes `allow`, the digests the host has loaded, when it could not get every package's state. A
   loaded package with no state is missing (Reader contract §9.4): this Reader keeps no index of the store, so it
   withholds every record rather than return one as if that package did not limit it, and reports
   `S011_STATE_MISSING` (warning). Without `allow`, nothing changes.
+
+### Changed
+
+- **The locale lookup** (package spec §5.4): the default representation is tagged with the manifest's `language`,
+  and each truncation of the request also finds tags that start with it, so `pt-AO` finds `pt-BR` and `en` finds the
+  default file before `en-GB`. A new module, `lib/locale.js` (`localeList`, `lookup`, `localeMatches`); content nodes
+  carry their default `language`. Unit tests in `test/locale.test.js`.
+
+### Added
+
+- **`locale` as a priority list** in `Library.citations`, `Library.get` and search (`['fr-CA', 'en']`); the pushdown
+  filter `locale` is the list.
+- **A store search chooses one representation per node** (contract §9.4), as a library search does, with the
+  default file as the fallback: `packageState` lists the files of each node with more than one (`representations`),
+  and `storedNode` reads them back. A state without `representations` (from 0.7) is matched as before.
 
 ## [0.7.0] - 2026-11-15
 
