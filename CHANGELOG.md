@@ -29,6 +29,10 @@ For moca-spec 0.8.0: content in more than one language, and store states.
   the default retrieval policy and the audience set keep, so a deprecated or ended translation is treated as a missing
   one. When a loaded node's representations differ in those steps, `locale` is applied in the gate, not pushed down
   (§9.5). Unit test in `test/locale.test.js`.
+  When the default is not a candidate either, the candidate with the lowest tag. The Reader then passes the filter
+  `everyRepresentation`, and the lexical backend returns every matching representation of a node instead of its
+  best one, which could be the retired file. A package state carries each file's `status`, window and audience
+  (`storedFileKept`), so a store search chooses among the files that pass, as a library search does.
 
 ### Added
 

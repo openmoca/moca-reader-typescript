@@ -83,3 +83,30 @@ test('contract §9.2 step 5.4: the locale chooses among representations the poli
   const all = library.search('bread', { locale: 'fr', includeAll: true });
   assert.deepEqual(all.map((r) => [r.node.locale, r.trust.status]), [['fr', 'deprecated']]);
 });
+
+test('contract §9.2 step 5.4: when the default file is not a candidate, the candidate with the lowest tag', () => {
+  const n = node('en', 'fr', 'de', 'pt-BR');
+  const notDefault = (r) => r.locale !== null;
+  assert.equal(pickRepresentation(n, 'es', notDefault).locale, 'de');
+  assert.equal(pickRepresentation(n, 'en', notDefault).locale, 'de');
+  assert.equal(pickRepresentation(n, 'fr', notDefault).locale, 'fr');
+  assert.equal(pickRepresentation(n, 'es', (r) => r.locale === 'pt-BR' || r.locale === 'fr').locale, 'fr');
+  assert.equal(pickRepresentation(n, 'es', () => false), undefined);
+});
+
+test('contract §9.5: the lexical backend keeps one representation per node unless asked for every one', async () => {
+  const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const { readPackage, Library } = await import('../lib/index.js');
+  const { LexicalBackend } = await import('../lib/backends/lexical.js');
+  const dir = mkdtempSync(join(tmpdir(), 'moca-every-'));
+  writeFileSync(join(dir, 'moca.json'), JSON.stringify({ id: 'https://example.com/e', version: '1.0.0', title: 'E', language: 'en', locales: ['fr'] }));
+  mkdirSync(join(dir, 'content'));
+  writeFileSync(join(dir, 'content/page.md'), '---\ntype: Note\ntitle: Bread\n---\n\nBread.\n');
+  writeFileSync(join(dir, 'content/page.fr.md'), '---\ntype: Note\ntitle: Pain\n---\n\nBread pain pain.\n');
+  const backend = new LexicalBackend(new Library().add(await readPackage(dir)));
+  rmSync(dir, { recursive: true });
+  assert.equal(backend.search('bread pain', { limit: 10, filters: {} }).length, 1);
+  assert.deepEqual(backend.search('bread pain', { limit: 10, filters: { everyRepresentation: true } }).map((h) => h.locale ?? null), ['fr', null]);
+});
