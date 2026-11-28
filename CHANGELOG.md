@@ -34,6 +34,8 @@ For moca-spec 0.8.0: content in more than one language, and store states.
   best one, which could be the retired file. A package state carries each file's `status`, window and audience
   (`storedFileKept`), so a store search chooses among the files that pass, as a library search does.
 
+- **The terms gate's place** (contract §9.2 step 5.7): the spec now says what this Reader already did. Comments only.
+
 ### Added
 
 - **Relations `translationOf` and `editionOf`** (package spec §7.2): core types, reported with no effect and no
