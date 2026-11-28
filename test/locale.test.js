@@ -132,3 +132,38 @@ test('contract §9: localeMode only and first', async () => {
   // Without a locale, localeMode has no effect: each node's best match, as the lexical backend gives it.
   assert.equal(library.search('bread', { localeMode: 'only' }).length, library.search('bread').length);
 });
+
+test('package spec §5.3: moca.language, and Reader interface §4: localeCoverage', async () => {
+  const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const { readPackage, Library } = await import('../lib/index.js');
+  const dir = mkdtempSync(join(tmpdir(), 'moca-nodelang-'));
+  writeFileSync(join(dir, 'moca.json'), JSON.stringify({ id: 'https://example.com/n', version: '1.0.0', title: 'N', language: 'en', locales: ['fr', 'de'] }));
+  mkdirSync(join(dir, 'content'));
+  writeFileSync(join(dir, 'content/a.md'), '---\ntype: Note\ntitle: A\n---\n\nA.\n');
+  writeFileSync(join(dir, 'content/a.fr.md'), '---\ntype: Note\ntitle: A\nmoca:\n  language: it\n---\n\nA.\n');
+  writeFileSync(join(dir, 'content/b.md'), '---\ntype: Note\ntitle: B\nmoca:\n  language: cy\n---\n\nB.\n');
+  const result = await readPackage(dir);
+  rmSync(dir, { recursive: true });
+  assert.deepEqual(result.localeCoverage, { cy: { nodes: 1, of: 2 }, de: { nodes: 0, of: 2 }, en: { nodes: 1, of: 2 }, fr: { nodes: 1, of: 2 } });
+  assert.ok(result.diagnostics.some((d) => d.code === 'C005_FIELD_INVALID' && d.file === 'content/a.fr.md'));
+  const library = new Library().add(result);
+  assert.equal(library.get('https://example.com/n#b.md').node.locale, 'cy');
+  assert.equal(library.get('https://example.com/n#b.md', { locale: 'cy' }).node.locale, 'cy');
+  assert.equal(library.get('https://example.com/n#a.md', { locale: 'it' }).node.locale, 'en');
+});
+
+test('contract §9.4: a package state knows a node in its own language, so a stored record maps to its default file', async () => {
+  const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const { readPackage, packageState } = await import('../lib/index.js');
+  const dir = mkdtempSync(join(tmpdir(), 'moca-state-'));
+  writeFileSync(join(dir, 'moca.json'), JSON.stringify({ id: 'https://example.com/s', version: '1.0.0', title: 'S', language: 'en' }));
+  mkdirSync(join(dir, 'content'));
+  writeFileSync(join(dir, 'content/b.md'), '---\ntype: Note\ntitle: B\nmoca:\n  language: cy\n---\n\nB.\n');
+  const state = packageState(await readPackage(dir));
+  rmSync(dir, { recursive: true });
+  assert.deepEqual(state.nodeLanguages, { 'b.md': 'cy' });
+});
