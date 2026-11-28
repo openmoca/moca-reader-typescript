@@ -2,19 +2,16 @@
 
 All notable changes to @openmoca/moca-core. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## Unreleased: 0.8.0
 
-For moca-spec 0.8.0.
+For moca-spec 0.8.0: content in more than one language, and store states.
 
-### Changed
+### Changed (store states)
 
 - A store search takes `allow`, the digests the host has loaded, when it could not get every package's state. A
   loaded package with no state is missing (Reader contract §9.4): this Reader keeps no index of the store, so it
   withholds every record rather than return one as if that package did not limit it, and reports
   `S011_STATE_MISSING` (warning). Without `allow`, nothing changes.
-## Unreleased: 0.8.0
-
-For moca-spec 0.8.0: content in more than one language.
 
 ### Changed
 
