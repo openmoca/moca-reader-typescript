@@ -299,7 +299,7 @@
         "type": {
           "type": "string",
           "minLength": 1,
-          "description": "supersedes | amends | conflictsWith | crossReferences, or a profile-defined type."
+          "description": "supersedes | amends | conflictsWith | crossReferences | isPartOf | translationOf | editionOf, or a profile-defined type."
         },
         "target": {
           "type": "string",
