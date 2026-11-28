@@ -27,6 +27,9 @@ For moca-spec 0.8.0: content in more than one language.
 
 - **`locale` as a priority list** in `Library.citations`, `Library.get` and search (`['fr-CA', 'en']`); the pushdown
   filter `locale` is the list.
+- **A store search chooses one representation per node** (contract §9.4), as a library search does, with the
+  default file as the fallback: `packageState` lists the files of each node with more than one (`representations`),
+  and `storedNode` reads them back. A state without `representations` (from 0.7) is matched as before.
 
 ## [0.7.0] - 2026-11-15
 

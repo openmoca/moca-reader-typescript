@@ -51,3 +51,17 @@ test('localeList and localeMatches', () => {
   assert.equal(localeMatches(undefined, 'fr'), false);
   assert.equal(lookup([{ tag: 'x', value: 1 }], 'en-a-bbb'), undefined);
 });
+
+test('contract §9.4: a package state lists the files of a node, and a store search chooses as a library does', async () => {
+  const { storedNode } = await import('../lib/state.js');
+  const state = { representations: { 'a.md': [{ tag: 'en', default: true }, { tag: 'pt-BR' }, { tag: 'pt-PT' }] } };
+  const n = storedNode(state, 'a.md');
+  assert.equal(pick(n, 'pt-AO'), 'pt-BR');
+  assert.equal(pick(n, ['fr', 'en']), 'default');
+  assert.equal(pick(n, 'de'), 'default');
+  // A node the state does not list has one file; a state from before 0.8.0 lists none.
+  assert.equal(storedNode(state, 'b.md'), null);
+  assert.equal(storedNode({}, 'a.md'), null);
+  // Entries that are not objects are ignored, never thrown on.
+  assert.equal(pick(storedNode({ representations: { 'a.md': [null, 7, { tag: 'en', default: true }] } }, 'a.md'), 'fr'), 'default');
+});
