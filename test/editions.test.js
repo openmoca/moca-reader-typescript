@@ -53,3 +53,42 @@ test('package spec §7.4: an edition the composite lists itself can be chosen th
   assert.deepEqual([...composer.slots[0].available.keys()].sort(), ['https://example.com/en', 'https://example.com/fr']);
   assert.equal(composer.keepsEdition({ package: { digest: 'd-fr' } }, 'fr'), true);
 });
+
+test('package spec §7.4: a slot belongs to the composite whose namespace holds its IRI', async () => {
+  const { ownsSlot } = await import('../lib/editions.js');
+  assert.equal(ownsSlot('https://example.com/course', 'https://example.com/course#bread'), true);
+  assert.equal(ownsSlot('https://example.com/course', 'https://example.com/course/bread'), true);
+  assert.equal(ownsSlot('https://example.com/course', 'https://example.com/course-b#bread'), false);
+  assert.equal(ownsSlot('https://example.com/course', 'https://example.com/other#bread'), false);
+  assert.equal(ownsSlot(undefined, 'https://example.com/course#bread'), false);
+});
+
+test('package spec §7.4, "Display": SemVer precedence picks the version that answers', async () => {
+  const { compareSemver } = await import('../lib/editions.js');
+  assert.equal(compareSemver('2.0.0', '1.9.9'), 1);
+  assert.equal(compareSemver('1.10.0', '1.9.0'), 1);
+  assert.equal(compareSemver('1.0.0-rc.1', '1.0.0'), -1);
+  assert.equal(compareSemver('1.0.0-alpha.2', '1.0.0-alpha.10'), -1);
+  assert.equal(compareSemver('1.0.0-alpha', '1.0.0-alpha.1'), -1);
+  assert.equal(compareSemver('1.0.0-1', '1.0.0-alpha'), -1);
+  assert.equal(compareSemver('1.0.0+build.2', '1.0.0+build.1'), 0);
+});
+
+test('package spec §7.4, "Choosing": a file summary says whether a package can return a record', async () => {
+  const { fileKept, summaryPasses, packageInForce } = await import('../lib/availability.js');
+  const now = new Date('2026-11-28T00:00:00Z');
+  const o = { now, superseded: false, includeAll: false };
+  assert.equal(fileKept({ status: 'stable' }, o), true);
+  assert.equal(fileKept({ status: 'deprecated' }, o), false);
+  assert.equal(fileKept({ status: 'stable', validUntil: '2026-01-01T00:00:00Z' }, o), false);
+  assert.equal(fileKept({ status: 'stable' }, { ...o, superseded: true }), false);
+  assert.equal(fileKept({ status: 'deprecated' }, { ...o, includeAll: true }), true);
+  assert.equal(fileKept({ status: 'stable', audience: 'staff' }, { ...o, audiences: ['public'] }), false);
+  assert.equal(summaryPasses([{ status: 'deprecated' }, { status: 'stable' }], o), true);
+  assert.equal(summaryPasses([{ status: 'stable', path: 'a.md' }], o, (path) => path !== 'a.md'), false);
+  assert.equal(summaryPasses(undefined, o), true);
+  assert.equal(packageInForce(undefined, '2026-01-01T00:00:00Z', now), false);
+  assert.equal(packageInForce('2026-12-01T00:00:00Z', undefined, now), false);
+  // A window whose end is not after its start is ignored, as for a node.
+  assert.equal(packageInForce('2026-12-01T00:00:00Z', '2026-01-01T00:00:00Z', now), true);
+});
