@@ -55,6 +55,10 @@ For moca-spec 0.8.0: content in more than one language, and store states.
 - **`localeMode`** in search (contract §9): `choose` (the default), `only` (records in another language drop out, in
   the gate) and `first` (records ordered by the first locale entry they match, then the next; the search asks again
   until `limit` records of the first group pass). Unit test in `test/locale.test.js`.
+- **Caption tracks** (package spec §5.7): `captions` on a media description, each `{ source, language, kind? }`,
+  checked entry by entry (`C005`, `C006`; the description stands) and carried in `node.media` with `kind` filled in.
+  Evidence is still checked against `transcript` only. The vendored node and citation-record schemas follow
+  moca-spec.
 - **`locale` as a priority list** in `Library.citations`, `Library.get` and search (`['fr-CA', 'en']`); the pushdown
   filter `locale` is the list.
 - **A store search chooses one representation per node** (contract §9.4), as a library search does, with the
