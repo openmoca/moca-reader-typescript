@@ -36,6 +36,8 @@ For moca-spec 0.8.0: content in more than one language, and store states.
 
 ### Added
 
+- **Relations `translationOf` and `editionOf`** (package spec §7.2): core types, reported with no effect and no
+  `R005`. The vendored manifest schema's description names them.
 - **`locale` as a priority list** in `Library.citations`, `Library.get` and search (`['fr-CA', 'en']`); the pushdown
   filter `locale` is the list.
 - **A store search chooses one representation per node** (contract §9.4), as a library search does, with the
