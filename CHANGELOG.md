@@ -79,6 +79,12 @@ For moca-spec 0.8.0: content in more than one language, and store states.
   stops at `FIRST_BOUND` (1,000) candidates with no host bound (`S010`). `MOCA_VERSION` is `0.8`. Unit tests in
   `test/locale.test.js`.
 
+- **Edition groups after review** (package spec §7.4): `chooseEdition` tags each edition with its `language` and
+  `locales`, and falls back to the composite's own language before the lowest id (package states carry members'
+  `locales` and the composite's `language`); `O007` for an edition no signer covers; `O006` for near misses of the
+  terms; `A011` for a signer whose `ids` entry names no host; `Composer.slotsFor` indexes slots by edition digest, so
+  a record costs its own slots only. Unit tests in `test/editions.test.js` and `test/structure.test.js`.
+
 ## [0.7.0] - 2026-11-15
 
 For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/5) and
