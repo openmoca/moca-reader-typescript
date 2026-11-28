@@ -167,3 +167,32 @@ test('contract §9.4: a package state knows a node in its own language, so a sto
   rmSync(dir, { recursive: true });
   assert.deepEqual(state.nodeLanguages, { 'b.md': 'cy' });
 });
+
+test('package spec §5.4: a sibling in another script is not taken when the entry names a script', () => {
+  const n = node('en', 'zh-Hans', 'sr-Cyrl', 'zh-Hant-HK');
+  assert.equal(pick(n, ['zh-Hant-TW', 'en']), 'zh-Hant-HK');
+  assert.equal(pick(node('en', 'zh-Hans'), ['zh-Hant-TW', 'en']), 'default');
+  assert.equal(pick(n, ['sr-Latn', 'en']), 'default');
+  assert.equal(pick(n, 'zh'), 'zh-Hans');
+  assert.equal(pick(n, 'zh-TW'), 'zh-Hans');
+});
+
+test('package spec §5.4: a list keeps 16 entries of at most 35 characters', async () => {
+  const { trimmedLocales } = await import('../lib/locale.js');
+  const many = Array.from({ length: 20 }, (_, i) => `x${i}`);
+  assert.deepEqual(trimmedLocales(many), { list: many.slice(0, 16), dropped: 4 });
+  assert.deepEqual(trimmedLocales([`a-${'b'.repeat(34)}`, 'fr']), { list: ['fr'], dropped: 1 });
+  assert.deepEqual(trimmedLocales(`a-${'b'.repeat(33)}`), { list: [`a-${'b'.repeat(33)}`], dropped: 0 });
+  assert.deepEqual(trimmedLocales(['', 7, 'en']), { list: ['en'], dropped: 0 });
+});
+
+test('contract §9.2: localeMode first is bounded when the host set no bound, and says so (S010)', async () => {
+  const { Search, FIRST_BOUND } = await import('../lib/search.js');
+  let asked = 0;
+  const record = (i) => ({ package: { digest: 'd', id: 'https://example.com/p' }, node: { ref: `r${i}`, path: `p${i}.md`, locale: 'en' }, trust: { inForce: true, superseded: false, status: 'stable' }, score: 1 });
+  const backend = { features: [], search: (q, { limit }) => { asked = Math.max(asked, limit); return Array.from({ length: limit }, (_, i) => ({ digest: 'd', node: `n${i}`, path: `p${i}.md`, score: 1, record: record(i) })); } };
+  const search = new Search({ packages: [{ digest: 'd', id: 'https://example.com/p', version: '1.0.0', signers: [], relations: [] }], clock: () => new Date('2026-11-28T00:00:00Z') }, { backend });
+  await search.search('q', { locale: 'fr', localeMode: 'first', limit: 5 });
+  assert.equal(asked, FIRST_BOUND);
+  assert.ok(search.diagnostics.some((d) => d.code === 'S010_SEARCH_TRUNCATED'));
+});

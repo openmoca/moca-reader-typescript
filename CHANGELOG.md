@@ -72,6 +72,13 @@ For moca-spec 0.8.0: content in more than one language, and store states.
   default file as the fallback: `packageState` lists the files of each node with more than one (`representations`),
   and `storedNode` reads them back. A state without `representations` (from 0.7) is matched as before.
 
+- **After review** (package spec §5.4, contract §9.2): `stale_after` and `moca.contested_by` are inherited, and every
+  inherited key, `moca.audience` included, goes through `lib/inherit.js`; a window of one own and one inherited bound
+  that is empty fails closed; a translation with its node's own tag is ignored (`C012`); the sibling step keeps to a
+  script the entry names; `trimmedLocales` caps a list at 16 entries of 35 characters (`S014`); `localeMode: 'first'`
+  stops at `FIRST_BOUND` (1,000) candidates with no host bound (`S010`). `MOCA_VERSION` is `0.8`. Unit tests in
+  `test/locale.test.js`.
+
 ## [0.7.0] - 2026-11-15
 
 For moca-spec 0.7.0 ([moca-spec#5](https://github.com/openmoca/moca-spec/issues/5) and
