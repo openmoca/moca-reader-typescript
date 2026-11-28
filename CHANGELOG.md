@@ -52,6 +52,9 @@ For moca-spec 0.8.0: content in more than one language, and store states.
   (`S013_EDITION_SLOTS_DISAGREE`), and a slot that hid records while the search returned nothing from its choice is
   reported (`S012_EDITION_SLOT_EMPTY`). `editions` and `chooseEdition` answer from the declaring composite in force,
   then the highest version (`compareSemver`). Unit tests in `test/editions.test.js`.
+- **`localeMode`** in search (contract §9): `choose` (the default), `only` (records in another language drop out, in
+  the gate) and `first` (records ordered by the first locale entry they match, then the next; the search asks again
+  until `limit` records of the first group pass). Unit test in `test/locale.test.js`.
 - **`locale` as a priority list** in `Library.citations`, `Library.get` and search (`['fr-CA', 'en']`); the pushdown
   filter `locale` is the list.
 - **A store search chooses one representation per node** (contract §9.4), as a library search does, with the
