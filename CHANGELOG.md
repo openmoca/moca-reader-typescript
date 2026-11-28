@@ -12,6 +12,21 @@ For moca-spec 0.8.0.
   loaded package with no state is missing (Reader contract §9.4): this Reader keeps no index of the store, so it
   withholds every record rather than return one as if that package did not limit it, and reports
   `S011_STATE_MISSING` (warning). Without `allow`, nothing changes.
+## Unreleased: 0.8.0
+
+For moca-spec 0.8.0: content in more than one language.
+
+### Changed
+
+- **The locale lookup** (package spec §5.4): the default representation is tagged with the manifest's `language`,
+  and each truncation of the request also finds tags that start with it, so `pt-AO` finds `pt-BR` and `en` finds the
+  default file before `en-GB`. A new module, `lib/locale.js` (`localeList`, `lookup`, `localeMatches`); content nodes
+  carry their default `language`. Unit tests in `test/locale.test.js`.
+
+### Added
+
+- **`locale` as a priority list** in `Library.citations`, `Library.get` and search (`['fr-CA', 'en']`); the pushdown
+  filter `locale` is the list.
 
 ## [0.7.0] - 2026-11-15
 
