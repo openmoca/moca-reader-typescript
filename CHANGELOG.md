@@ -38,6 +38,12 @@ For moca-spec 0.8.0: content in more than one language, and store states.
 
 - **Relations `translationOf` and `editionOf`** (package spec §7.2): core types, reported with no effect and no
   `R005`. The vendored manifest schema's description names them.
+- **Edition groups** (package spec §7.4): `schema:workExample` and `moca:defaultEdition` in a composite's own
+  structure make a slot of editions (`O006_EDITION_GROUP_INVALID` for a statement that is ignored). An edition is
+  bound to its slot as a part is (`scope`, `nodes()`, `upTo`). With a locale, the gate keeps one edition per slot,
+  and its members, where the composite's signers cover the record's package (`editions: 'all'` keeps every one).
+  Package states carry each member's `language` and the slots. Structure operations `editions(slot)` and
+  `chooseEdition(slot, locale)`. A new module, `lib/editions.js`; unit tests in `test/editions.test.js`.
 - **`locale` as a priority list** in `Library.citations`, `Library.get` and search (`['fr-CA', 'en']`); the pushdown
   filter `locale` is the list.
 - **A store search chooses one representation per node** (contract §9.4), as a library search does, with the
