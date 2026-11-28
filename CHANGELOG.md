@@ -20,6 +20,11 @@ For moca-spec 0.8.0: content in more than one language, and store states.
   default file before `en-GB`. A new module, `lib/locale.js` (`localeList`, `lookup`, `localeMatches`); content nodes
   carry their default `language`. Unit tests in `test/locale.test.js`.
 
+- **A translation inherits** its default file's `moca.concepts`, `status`, `moca.valid_from` and `moca.valid_until`
+  when it writes none, each key on its own, as it already did `moca.audience` (package spec §5.4). `C010` is checked
+  on the window each representation ends up with. A new module, `lib/inherit.js`; unit tests in
+  `test/inherit.test.js`.
+
 ### Added
 
 - **`locale` as a priority list** in `Library.citations`, `Library.get` and search (`['fr-CA', 'en']`); the pushdown
