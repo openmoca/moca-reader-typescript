@@ -203,6 +203,36 @@
             },
             "additionalProperties": false
           }
+        },
+        "captions": {
+          "type": "array",
+          "description": "Caption and subtitle tracks, each a WebVTT source with its language and HTML track kind (spec/moca-package-spec.md §5.7).",
+          "items": {
+            "type": "object",
+            "required": [
+              "source",
+              "language"
+            ],
+            "properties": {
+              "source": {
+                "type": "string",
+                "minLength": 1
+              },
+              "language": {
+                "type": "string",
+                "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*(?![\\s\\S])"
+              },
+              "kind": {
+                "enum": [
+                  "subtitles",
+                  "captions",
+                  "descriptions",
+                  "chapters"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
