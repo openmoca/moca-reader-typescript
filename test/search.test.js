@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   packageState,
-  readPackage, bindSidecar, Library, Search, LexicalBackend, DenseBackend, MemoryStoreBackend, validateAgainst, diversify, similarity, modelMismatch, HybridBackend,
+  readPackage, bindSidecar, Library, Search, LexicalBackend, DenseBackend, MemoryStoreBackend, validateAgainst, diversify, similarity, modelMismatch, HybridBackend, loadTrustRoot,
 } from '../lib/index.js';
 import { toyEmbedder } from './fixtures/toy-embedder.js';
 
@@ -318,4 +318,22 @@ test('two chunks of one node that share a start but not an end are both kept (co
   const hit = (end, score) => ({ digest: current.digest, node: `${current.manifest.id}#${whole.node.path}`, path: whole.node.path, score, span: { start, end } });
   const results = await new Search(library, { backend: rawBackend([hit(start + 10, 2), hit(start + 20, 1)]) }).search('anything');
   assert.deepEqual(results.map((r) => r.span.end), [start + 10, start + 20]);
+});
+
+test('a store search with a loaded package whose state it cannot get withholds the records, never returns them unlimited (contract §9.4)', async () => {
+  // Version 2.0.0 supersedes 1.0.0. The host loaded both, and could not get 2.0.0's state.
+  const library = new Library({ clock: () => new Date('2026-09-27T00:00:00Z') });
+  const trustRoot = await loadTrustRoot(at('conformance/fixtures/trust-root.json'));
+  const v1 = await readPackage(at('conformance/fixtures/search-policy/v1'), { trustRoot });
+  const v2 = await readPackage(at('conformance/fixtures/search-policy/v2'), { trustRoot });
+  library.add(v1).add(v2);
+  const store = await new MemoryStoreBackend({ filterPushdown: false }).ingest(library);
+  const whole = new Search({ packages: [packageState(v1), packageState(v2)], clock: library.clock }, { backend: store });
+  assert.ok((await whole.search('retention period', { includeAll: true })).length > 0);
+  assert.ok(!whole.diagnostics.some((d) => d.code === 'S011_STATE_MISSING'));
+
+  const partial = new Search({ packages: [packageState(v1)], allow: [v1.digest, v2.digest], clock: library.clock }, { backend: store });
+  const records = await partial.search('retention period', { includeAll: true });
+  assert.deepEqual(records, []);
+  assert.ok(partial.diagnostics.some((d) => d.code === 'S011_STATE_MISSING' && d.severity === 'warning'));
 });
