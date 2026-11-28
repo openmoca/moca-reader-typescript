@@ -38,6 +38,20 @@ For moca-spec 0.8.0: content in more than one language, and store states.
 
 - **Relations `translationOf` and `editionOf`** (package spec §7.2): core types, reported with no effect and no
   `R005`. The vendored manifest schema's description names them.
+- **Edition groups** (package spec §7.4): `schema:workExample` and `moca:defaultEdition` in a composite's own
+  structure make a slot of editions (`O006_EDITION_GROUP_INVALID` for a statement that is ignored). An edition is
+  bound to its slot as a part is (`scope`, `nodes()`, `upTo`). With a locale, the gate keeps one edition per slot,
+  and its members, where the composite's signers cover the record's package (`editions: 'all'` keeps every one).
+  Package states carry each member's `language` and the slots. Structure operations `editions(slot)` and
+  `chooseEdition(slot, locale)`. A new module, `lib/editions.js`; unit tests in `test/editions.test.js`.
+- **Edition groups, as reviewed** (package spec §7.4): a slot whose IRI is outside its composite's own namespace is
+  not read (`O006`), and the statements it makes bind nothing. A slot chooses, once per search, only among editions
+  the search can return: loaded, with a file that passes steps 5.1 to 5.3 and the terms gate (`lib/availability.js`,
+  `fileSummary`; package states carry `files`, `validFrom` and `validUntil`). A composite that is superseded or out
+  of force neither folds nor limits by `upTo`. A slot does not hide when another slot hides its choice
+  (`S013_EDITION_SLOTS_DISAGREE`), and a slot that hid records while the search returned nothing from its choice is
+  reported (`S012_EDITION_SLOT_EMPTY`). `editions` and `chooseEdition` answer from the declaring composite in force,
+  then the highest version (`compareSemver`). Unit tests in `test/editions.test.js`.
 - **`locale` as a priority list** in `Library.citations`, `Library.get` and search (`['fr-CA', 'en']`); the pushdown
   filter `locale` is the list.
 - **A store search chooses one representation per node** (contract §9.4), as a library search does, with the
