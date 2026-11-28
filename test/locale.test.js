@@ -65,3 +65,21 @@ test('contract §9.4: a package state lists the files of a node, and a store sea
   // Entries that are not objects are ignored, never thrown on.
   assert.equal(pick(storedNode({ representations: { 'a.md': [null, 7, { tag: 'en', default: true }] } }, 'a.md'), 'fr'), 'default');
 });
+
+test('contract §9.2 step 5.4: the locale chooses among representations the policy keeps, with pushdown too', async () => {
+  const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const { readPackage, Library } = await import('../lib/index.js');
+  const dir = mkdtempSync(join(tmpdir(), 'moca-retired-'));
+  writeFileSync(join(dir, 'moca.json'), JSON.stringify({ id: 'https://example.com/r', version: '1.0.0', title: 'R', language: 'en', locales: ['fr'] }));
+  mkdirSync(join(dir, 'content'));
+  writeFileSync(join(dir, 'content/page.md'), '---\ntype: Note\ntitle: Bread\n---\n\nBread.\n');
+  writeFileSync(join(dir, 'content/page.fr.md'), '---\ntype: Note\ntitle: Pain\nstatus: deprecated\n---\n\nBread pain.\n');
+  const library = new Library().add(await readPackage(dir));
+  rmSync(dir, { recursive: true });
+  const hits = library.search('bread', { locale: 'fr' });
+  assert.deepEqual(hits.map((r) => r.node.locale), ['en']);
+  const all = library.search('bread', { locale: 'fr', includeAll: true });
+  assert.deepEqual(all.map((r) => [r.node.locale, r.trust.status]), [['fr', 'deprecated']]);
+});

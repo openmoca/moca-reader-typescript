@@ -25,6 +25,11 @@ For moca-spec 0.8.0: content in more than one language, and store states.
   on the window each representation ends up with. A new module, `lib/inherit.js`; unit tests in
   `test/inherit.test.js`.
 
+- **A retired translation falls back** (contract §9.2 step 5.4): a search chooses a node's representation among those
+  the default retrieval policy and the audience set keep, so a deprecated or ended translation is treated as a missing
+  one. When a loaded node's representations differ in those steps, `locale` is applied in the gate, not pushed down
+  (§9.5). Unit test in `test/locale.test.js`.
+
 ### Added
 
 - **`locale` as a priority list** in `Library.citations`, `Library.get` and search (`['fr-CA', 'en']`); the pushdown
