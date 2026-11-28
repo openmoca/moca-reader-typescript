@@ -116,3 +116,13 @@ test('a host overlay nested past the limit is O001 with the overlay as the file'
   const library = new Library({ overlays: [{ id: 'deep', layer: 'application', source: nested(65) }] });
   assert.deepEqual(library.diagnostics.items.map((d) => `${d.code} ${d.file}`), ['O001_ONTOLOGY_UNPARSEABLE overlay:deep']);
 });
+
+test('package spec §7.4, "Problems": near misses of the edition-group terms are reported and ignored', async () => {
+  const { parseStructure } = await import('../lib/structure.js');
+  const { Diagnostics } = await import('../lib/diagnostics.js');
+  const diagnostics = new Diagnostics();
+  const ttl = '<https://example.com/c#s> <http://schema.org/workExample> <https://example.com/e> ; <https://w3id.org/moca/ns#defaultedition> <https://example.com/e> ; <http://schema.org/name> "x" .';
+  const { facts } = parseStructure(Buffer.from(ttl), { file: 'structure.ttl', layer: 'package', origin: 'o', diagnostics, limits: { maxTriples: 1000, maxStructureBytes: 1e6 } });
+  assert.deepEqual(diagnostics.items.map((d) => d.code), ['O006_EDITION_GROUP_INVALID', 'O006_EDITION_GROUP_INVALID']);
+  assert.equal(facts.length, 0);
+});

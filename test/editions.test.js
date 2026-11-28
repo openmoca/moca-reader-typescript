@@ -92,3 +92,15 @@ test('package spec §7.4, "Choosing": a file summary says whether a package can 
   // A window whose end is not after its start is ignored, as for a node.
   assert.equal(packageInForce('2026-12-01T00:00:00Z', '2026-01-01T00:00:00Z', now), true);
 });
+
+test('package spec §7.4, "Choosing": an edition is tagged with its locales, and the composite\'s language comes before the lowest id', () => {
+  const slot = { editions: ['https://example.com/ar', 'https://example.com/en', 'https://example.com/zh'], default: 'https://example.com/zh' };
+  const available = new Map([
+    ['https://example.com/ar', { language: 'ar' }],
+    ['https://example.com/en', { language: 'en', locales: ['fr'] }],
+  ]);
+  assert.equal(chooseEdition(slot, available, 'fr'), 'https://example.com/en');
+  assert.equal(chooseEdition(slot, available, 'de', 'en'), 'https://example.com/en');
+  assert.equal(chooseEdition(slot, available, 'de'), 'https://example.com/ar');
+  assert.equal(chooseEdition(slot, available, 'de', 'ja'), 'https://example.com/ar');
+});
