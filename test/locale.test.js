@@ -110,3 +110,25 @@ test('contract §9.5: the lexical backend keeps one representation per node unle
   assert.equal(backend.search('bread pain', { limit: 10, filters: {} }).length, 1);
   assert.deepEqual(backend.search('bread pain', { limit: 10, filters: { everyRepresentation: true } }).map((h) => h.locale ?? null), ['fr', null]);
 });
+
+test('contract §9: localeMode only and first', async () => {
+  const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const { readPackage, Library } = await import('../lib/index.js');
+  const dir = mkdtempSync(join(tmpdir(), 'moca-mode-'));
+  writeFileSync(join(dir, 'moca.json'), JSON.stringify({ id: 'https://example.com/m', version: '1.0.0', title: 'M', language: 'en', locales: ['fr'] }));
+  mkdirSync(join(dir, 'content'));
+  // The English-only page matches best; the French page less well.
+  writeFileSync(join(dir, 'content/a.md'), '---\ntype: Note\ntitle: A\n---\n\nbread bread bread bread.\n');
+  writeFileSync(join(dir, 'content/b.md'), '---\ntype: Note\ntitle: B\n---\n\nbread.\n');
+  writeFileSync(join(dir, 'content/b.fr.md'), '---\ntype: Note\ntitle: B\n---\n\nbread pain.\n');
+  const library = new Library().add(await readPackage(dir));
+  rmSync(dir, { recursive: true });
+  assert.deepEqual(library.search('bread', { locale: 'fr' }).map((r) => r.node.path), ['a.md', 'b.md']);
+  assert.deepEqual(library.search('bread', { locale: 'fr', localeMode: 'only' }).map((r) => [r.node.path, r.node.locale]), [['b.md', 'fr']]);
+  assert.deepEqual(library.search('bread', { locale: 'fr', localeMode: 'first' }).map((r) => r.node.path), ['b.md', 'a.md']);
+  assert.deepEqual(library.search('bread', { locale: 'fr', localeMode: 'first', limit: 1 }).map((r) => r.node.path), ['b.md']);
+  // Without a locale, localeMode has no effect: each node's best match, as the lexical backend gives it.
+  assert.equal(library.search('bread', { localeMode: 'only' }).length, library.search('bread').length);
+});
